@@ -1,0 +1,140 @@
+<div class="payment-reports-page">
+  <div class="page-header">
+    <div>
+      <h2>Payment Reports</h2>
+      <p>Payment register, account statements, and party ledgers from posted and approval data.</p>
+    </div>
+    <div class="report-actions">
+      <button type="button" class="btn btn-outline-secondary" (click)="printReport()" [disabled]="!rows().length">Print</button>
+      <button type="button" class="btn btn-outline-success" (click)="exportCsv()" [disabled]="!rows().length">Export CSV</button>
+    </div>
+  </div>
+
+  <div class="report-card">
+    <div class="tab-row">
+      <button type="button" [class.active]="activeReport === 'register'" (click)="activeReport = 'register'; report = null">Payment Register</button>
+      <button type="button" [class.active]="activeReport === 'account'" (click)="activeReport = 'account'; report = null">Account Statement</button>
+      <button type="button" [class.active]="activeReport === 'party'" (click)="activeReport = 'party'; report = null">Party Ledger</button>
+    </div>
+
+    <div class="filter-grid">
+      <div>
+        <label class="form-label">Start Date</label>
+        <input type="date" class="form-control" [(ngModel)]="startDate">
+      </div>
+      <div>
+        <label class="form-label">End Date</label>
+        <input type="date" class="form-control" [(ngModel)]="endDate">
+      </div>
+      <div *ngIf="activeReport === 'register'">
+        <label class="form-label">Approval Status</label>
+        <select class="form-select" [(ngModel)]="status">
+          <option value="">All</option>
+          <option value="DRAFT">Draft</option>
+          <option value="PENDING_APPROVAL">Pending Approval</option>
+          <option value="APPROVED">Approved</option>
+          <option value="REJECTED">Rejected</option>
+        </select>
+      </div>
+      <div *ngIf="activeReport === 'register'">
+        <label class="form-label">Method</label>
+        <select class="form-select" [(ngModel)]="method">
+          <option value="">All</option>
+          <option value="CASH">Cash</option>
+          <option value="BANK">Bank</option>
+          <option value="MOBILE_BANKING">Mobile Banking</option>
+          <option value="CHEQUE">Cheque</option>
+          <option value="BANK_TRANSFER">Bank Transfer</option>
+          <option value="CARD">Card</option>
+        </select>
+      </div>
+      <div *ngIf="activeReport === 'account'">
+        <label class="form-label">Account</label>
+        <select class="form-select" [(ngModel)]="accountId">
+          <option [ngValue]="null">Select account</option>
+          <option *ngFor="let account of accounts" [ngValue]="account.accountId">{{ account.accountCode }} - {{ account.accountName }}</option>
+        </select>
+      </div>
+      <div *ngIf="activeReport === 'party'">
+        <label class="form-label">Party Type</label>
+        <select class="form-select" [(ngModel)]="partyType">
+          <option value="CUSTOMER">Customer</option>
+          <option value="SUPPLIER">Supplier</option>
+          <option value="VENDOR">Vendor</option>
+          <option value="EMPLOYEE">Employee</option>
+          <option value="OTHER">Other</option>
+        </select>
+      </div>
+      <div *ngIf="activeReport === 'party'">
+        <label class="form-label">Party ID</label>
+        <input type="number" class="form-control" [(ngModel)]="partyId" min="1">
+      </div>
+      <div class="align-self-end">
+        <button type="button" class="btn btn-success w-100" (click)="generate()" [disabled]="loading">
+          {{ loading ? 'Generating...' : 'Generate Report' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="summary-grid" *ngIf="report">
+    <article><span>Total Debit</span><strong>{{ formatCurrency(report.totalDebit || report.totalPaid || 0) }}</strong></article>
+    <article><span>Total Credit</span><strong>{{ formatCurrency(report.totalCredit || report.totalReceived || 0) }}</strong></article>
+    <article><span>Net Movement</span><strong>{{ formatCurrency(report.netMovement || report.closingBalance || 0) }}</strong></article>
+    <article><span>Rows</span><strong>{{ rows().length }}</strong></article>
+  </div>
+
+  <div class="report-table panel" *ngIf="report">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0" *ngIf="activeReport === 'register'">
+        <thead class="theme-table-header">
+          <tr>
+            <th>Voucher</th>
+            <th>Date</th>
+            <th>Type</th>
+            <th>Method</th>
+            <th>Status</th>
+            <th class="text-end">Requested</th>
+            <th class="text-end">Approved</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of rows()">
+            <td>{{ row.voucherNo || row.paymentId }}</td>
+            <td>{{ formatDate(row.paymentDate) }}</td>
+            <td>{{ row.paymentType }} / {{ row.direction }}</td>
+            <td>{{ row.paymentMethod }}</td>
+            <td>{{ row.approvalStatus }} / {{ row.transactionStatus }}</td>
+            <td class="text-end">{{ formatCurrency(row.requestedAmount || row.amount) }}</td>
+            <td class="text-end">{{ formatCurrency(row.approvedAmount) }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="table table-hover align-middle mb-0" *ngIf="activeReport !== 'register'">
+        <thead class="theme-table-header">
+          <tr>
+            <th>Date</th>
+            <th>Reference</th>
+            <th>Description</th>
+            <th class="text-end">Debit</th>
+            <th class="text-end">Credit</th>
+            <th class="text-end">Balance</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of rows()">
+            <td>{{ formatDate(row.postedAt || row.createdAt) }}</td>
+            <td>{{ row.voucherNo || row.referenceId || row.paymentId }}</td>
+            <td>{{ row.description || row.entryType || '-' }}</td>
+            <td class="text-end">{{ formatCurrency(row.debitAmount) }}</td>
+            <td class="text-end">{{ formatCurrency(row.creditAmount) }}</td>
+            <td class="text-end">{{ formatCurrency(row.balanceAfter) }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div *ngIf="rows().length === 0" class="empty-state">No report rows found for selected filters.</div>
+    </div>
+  </div>
+</div>

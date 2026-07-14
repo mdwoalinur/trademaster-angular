@@ -1,0 +1,29 @@
+<div class="label-print-container">
+  <div class="d-flex justify-content-between mb-3">
+    <h5>Print Labels ({{ products.length }} products)</h5>
+    <div>
+      <button class="btn btn-primary me-2" (click)="printLabels()">
+        <i class="bi bi-printer"></i> Print
+      </button>
+      <button class="btn btn-secondary" (click)="close()">Cancel</button>
+    </div>
+  </div>
+
+  <div id="labelPrintArea" class="labels-wrapper">
+    <div *ngFor="let product of products" class="label-card">
+      <div class="barcode-area">
+        <img [src]="getBarcodeDataURL(product)" alt="Barcode" class="barcode-img">
+      </div>
+      <div class="product-info">
+        <img
+          class="label-product-img"
+          [src]="getProductImageUrl(product)"
+          [alt]="product.productName"
+          (error)="onProductImageError($event)">
+        <div class="product-name">{{ product.productName }}</div>
+        <div class="product-price">{{ formatCurrency(product.sellingPrice) }}</div>
+        <div class="product-sku">SKU: {{ product.sku || product.productCode }}</div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,23 @@
+.purchase-return-page .card {
+  background: var(--tm-surface);
+  border-color: var(--tm-border);
+  box-shadow: var(--tm-shadow);
+}
+
+.qty-input {
+  min-width: 90px;
+}
+
+.totals-card .card-body > div {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--tm-border);
+}
+
+.totals-card .grand {
+  color: var(--tm-primary);
+  font-size: 1.05rem;
+  font-weight: 900;
+  border-bottom: 0 !important;
+}

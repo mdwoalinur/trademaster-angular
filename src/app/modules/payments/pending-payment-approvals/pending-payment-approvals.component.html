@@ -1,0 +1,83 @@
+<div class="pending-approvals-page">
+  <div class="page-title-row">
+    <div>
+      <h2>Pending Payment Approvals</h2>
+      <p>Review, validate, approve and post payment requests into the financial ledger.</p>
+    </div>
+    <button type="button" class="btn btn-outline-secondary" (click)="loadPendingApprovals()">
+      <i class="bi bi-arrow-clockwise"></i> Refresh
+    </button>
+  </div>
+
+  <div class="summary-strip">
+    <div>
+      <span>Pending Requests</span>
+      <strong>{{ totalElements }}</strong>
+    </div>
+    <div>
+      <span>Loaded Page Total</span>
+      <strong>{{ formatCurrency(loadedPageTotal) }}</strong>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-success"></div>
+  </div>
+
+  <div *ngIf="!loading" class="table-responsive approvals-table-wrap">
+    <table class="table table-hover align-middle">
+      <thead class="theme-table-header">
+        <tr>
+          <th>Voucher</th>
+          <th>Type</th>
+          <th>Direction</th>
+          <th>Reference</th>
+          <th>Date</th>
+          <th class="text-end">Requested</th>
+          <th>Method</th>
+          <th>Approval</th>
+          <th>Transaction</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let payment of payments">
+          <td class="fw-semibold">{{ payment.voucherNo || '-' }}</td>
+          <td>{{ payment.paymentType }}</td>
+          <td>{{ payment.direction || '-' }}</td>
+          <td>{{ payment.referenceNo || payment.referenceId }}</td>
+          <td>{{ formatDate(payment.paymentDate) }}</td>
+          <td class="text-end fw-semibold">{{ formatCurrency(payment.requestedAmount || payment.amount) }}</td>
+          <td>{{ payment.paymentMethod }}</td>
+          <td><span class="badge" [class]="getStatusBadge(payment.approvalStatus)">{{ payment.approvalStatus }}</span></td>
+          <td><span class="badge" [class]="getStatusBadge(payment.transactionStatus)">{{ payment.transactionStatus }}</span></td>
+          <td class="text-end">
+            <button type="button" class="btn btn-sm btn-outline-primary me-1" (click)="viewPayment(payment)" title="View">
+              <i class="bi bi-eye"></i>
+            </button>
+            <button type="button" class="btn btn-sm btn-success me-1" (click)="approvePayment(payment)" title="Approve & Post">
+              <i class="bi bi-check2-circle"></i>
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-danger" (click)="rejectPayment(payment)" title="Reject">
+              <i class="bi bi-x-circle"></i>
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="payments.length === 0">
+          <td colspan="10" class="text-center text-muted py-4">No pending payment approvals.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="totalPages > 1" class="d-flex justify-content-between align-items-center mt-3">
+    <div>Showing {{ (currentPage - 1) * pageSize + 1 }} - {{ Math.min(currentPage * pageSize, totalElements) }} of {{ totalElements }}</div>
+    <div>
+      <button class="btn btn-outline-secondary btn-sm me-2" (click)="firstPage()" [disabled]="currentPage === 1"><i class="bi bi-chevron-double-left"></i></button>
+      <button class="btn btn-outline-secondary btn-sm me-2" (click)="previousPage()" [disabled]="currentPage === 1"><i class="bi bi-chevron-left"></i></button>
+      <span>Page {{ currentPage }} of {{ totalPages }}</span>
+      <button class="btn btn-outline-secondary btn-sm ms-2" (click)="nextPage()" [disabled]="currentPage === totalPages"><i class="bi bi-chevron-right"></i></button>
+      <button class="btn btn-outline-secondary btn-sm ms-2" (click)="lastPage()" [disabled]="currentPage === totalPages"><i class="bi bi-chevron-double-right"></i></button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,84 @@
+<div class="container mt-4">
+  <div class="card shadow">
+    <div class="card-header bg-primary text-white">
+      <h3 class="mb-0">{{ isEdit ? 'Edit User' : 'Add New User' }}</h3>
+    </div>
+    <div class="card-body">
+      <div *ngIf="loading" class="text-center py-5">
+        <div class="spinner-border text-primary"></div>
+        <p class="mt-2">Loading...</p>
+      </div>
+
+      <form [formGroup]="userForm" (ngSubmit)="onSubmit()" *ngIf="!loading">
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label">Role *</label>
+            <select class="form-select" formControlName="roleId">
+              <option [value]="">-- Select Role --</option>
+              <option *ngFor="let role of roles" [value]="role.roleId">
+                {{ role.roleName }}
+              </option>
+            </select>
+            <div class="invalid-feedback" *ngIf="userForm.get('roleId')?.invalid && userForm.get('roleId')?.touched">
+              Role is required
+            </div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Username *</label>
+            <input type="text" class="form-control" formControlName="username">
+            <div class="invalid-feedback" *ngIf="userForm.get('username')?.invalid && userForm.get('username')?.touched">
+              Username is required (min 3 characters)
+            </div>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label">Full Name *</label>
+            <input type="text" class="form-control" formControlName="fullName">
+            <div class="invalid-feedback" *ngIf="userForm.get('fullName')?.invalid && userForm.get('fullName')?.touched">
+              Full name is required
+            </div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Email *</label>
+            <input type="email" class="form-control" formControlName="email">
+            <div class="invalid-feedback" *ngIf="userForm.get('email')?.invalid && userForm.get('email')?.touched">
+              Valid email is required
+            </div>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label">Phone</label>
+            <input type="text" class="form-control" formControlName="phone">
+          </div>
+          <div class="col-md-6" *ngIf="!isEdit">
+            <label class="form-label">Password *</label>
+            <input type="password" class="form-control" formControlName="passwordHash">
+            <div class="invalid-feedback" *ngIf="userForm.get('passwordHash')?.invalid && userForm.get('passwordHash')?.touched">
+              Password is required (min 6 characters)
+            </div>
+          </div>
+          <div class="col-md-6" *ngIf="isEdit">
+            <label class="form-label">Status</label>
+            <select class="form-select" formControlName="isActive">
+              <option [value]="true">Active</option>
+              <option [value]="false">Inactive</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="mt-4 d-flex justify-content-between">
+          <button type="button" class="btn btn-secondary" (click)="cancel()">
+            <i class="bi bi-x-circle"></i> Cancel
+          </button>
+          <button type="submit" class="btn btn-primary" [disabled]="userForm.invalid">
+            <i class="bi bi-check-circle"></i> {{ isEdit ? 'Update User' : 'Create User' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

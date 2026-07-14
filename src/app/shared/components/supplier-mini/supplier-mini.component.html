@@ -1,0 +1,13 @@
+<div class="supplier-mini" [class.compact]="compact">
+  <div class="supplier-logo">
+    <img *ngIf="resolvedPhotoUrl && !imageFailed" [src]="resolvedPhotoUrl" (error)="onImageError()" alt="Supplier logo">
+    <div class="supplier-logo-fallback" *ngIf="!resolvedPhotoUrl || imageFailed">
+      <i class="bi bi-building"></i>
+      <span>{{ initials }}</span>
+    </div>
+  </div>
+  <div class="supplier-info">
+    <div class="supplier-name">{{ supplierName || 'N/A' }}</div>
+    <div class="supplier-meta">{{ meta || 'Supplier' }}</div>
+  </div>
+</div>

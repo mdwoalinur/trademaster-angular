@@ -1,0 +1,132 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Purchase Orders</h2>
+    <button class="btn btn-primary" (click)="addPurchase()">
+      <i class="bi bi-plus-circle"></i> New Purchase
+    </button>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <input type="text" class="form-control" placeholder="Search by PO number..." 
+                 [(ngModel)]="searchKeyword" (input)="onSearch()">
+        </div>
+        <div class="col-md-3">
+          <select class="form-select" [(ngModel)]="selectedStatus" (change)="onStatusChange()">
+            <option value="">All Statuses</option>
+            <option value="PENDING">Pending</option>
+            <option value="RECEIVED">Received</option>
+            <option value="CANCELLED">Cancelled</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <button class="btn btn-outline-secondary w-100" (click)="resetFilters()">
+            <i class="bi bi-eraser"></i> Reset
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary"></div>
+    <p class="mt-2">Loading purchases...</p>
+  </div>
+
+  <div *ngIf="!loading" class="table-responsive">
+    <table class="table table-hover table-bordered">
+      <thead class="theme-table-header">
+        <tr>
+          <th>PO #</th>
+          <th>Supplier</th>
+          <th>Order Date</th>
+          <th>Total Amount</th>
+          <th>Status</th>
+          <th style="width:180px">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let p of purchases">
+          <td>{{ p.purchaseOrderNo }}</td>
+          <td>
+            <app-supplier-mini
+              [photoUrl]="getSupplier(p.supplierId)?.photoUrl"
+              [supplierName]="getSupplierName(p.supplierId)"
+              [supplierCode]="getSupplier(p.supplierId)?.supplierCode"
+              [email]="getSupplier(p.supplierId)?.email"
+              [phone]="getSupplier(p.supplierId)?.phone"
+              [contactPerson]="getSupplier(p.supplierId)?.contactPerson"
+              [compact]="true">
+            </app-supplier-mini>
+          </td>
+          <td>{{ formatDate(p.purchaseDate) }}</td>
+          <td>{{ formatCurrency(p.totalAmount) }}</td>
+          <td><span class="badge" [class]="getStatusBadge(p.status!)">{{ p.status }}</span></td>
+          <td>
+            <button class="btn btn-sm btn-info me-1" (click)="viewPurchase(p.purchaseId!)" title="View">
+              <i class="bi bi-eye"></i>
+            </button>
+            <button class="btn btn-sm btn-warning me-1" (click)="editPurchase(p.purchaseId!)" 
+                    [disabled]="!canEdit(p)" title="Edit">
+              <i class="bi bi-pencil"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-secondary me-1" (click)="viewPurchaseInvoice(p)" 
+                    title="Print PO">
+              <i class="bi bi-printer"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-primary me-1" (click)="sendOrderEmail(p)" 
+                    title="Send Order Email">
+              <i class="bi bi-envelope"></i>
+            </button>
+            <button class="btn btn-sm btn-success me-1" (click)="markAsReceived(p)" 
+                    [disabled]="!canReceive(p)" title="Mark as Received">
+              <i class="bi bi-check-lg"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-danger me-1" (click)="cancelPurchase(p)" 
+                    [disabled]="!canCancel(p)" title="Cancel">
+              <i class="bi bi-x-lg"></i>
+            </button>
+            <button class="btn btn-sm btn-danger" (click)="deletePurchase(p.purchaseId!)" 
+                    [disabled]="!canDelete(p)" title="Delete">
+              <i class="bi bi-trash"></i>
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="purchases.length === 0">
+          <td colspan="6" class="text-center py-4">No purchase orders found.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div *ngIf="totalPages > 1" class="d-flex justify-content-between align-items-center mt-3">
+    <div>Showing {{ (currentPage - 1) * pageSize + 1 }} - {{ Math.min(currentPage * pageSize, totalElements) }} of {{ totalElements }} purchases</div>
+    <div>
+      <button class="btn btn-outline-secondary btn-sm me-2" (click)="firstPage()" [disabled]="currentPage === 1"><i class="bi bi-chevron-double-left"></i></button>
+      <button class="btn btn-outline-secondary btn-sm me-2" (click)="previousPage()" [disabled]="currentPage === 1"><i class="bi bi-chevron-left"></i></button>
+      <span>Page {{ currentPage }} of {{ totalPages }}</span>
+      <button class="btn btn-outline-secondary btn-sm ms-2" (click)="nextPage()" [disabled]="currentPage === totalPages"><i class="bi bi-chevron-right"></i></button>
+      <button class="btn btn-outline-secondary btn-sm ms-2" (click)="lastPage()" [disabled]="currentPage === totalPages"><i class="bi bi-chevron-double-right"></i></button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== PURCHASE INVOICE POPUP MODAL ==================== -->
+<div class="invoice-popup-backdrop" *ngIf="showPurchaseInvoice" (click)="closePurchaseInvoice()">
+  <div class="invoice-popup-content" (click)="$event.stopPropagation()">
+    <!-- Close button -->
+    <button class="btn-close-invoice" (click)="closePurchaseInvoice()">✕</button>
+
+    <!-- Purchase Invoice Component -->
+    <app-purchase-invoice
+      *ngIf="selectedPurchase"
+      [purchase]="selectedPurchase"
+      [supplierName]="getSupplierName(selectedPurchase.supplierId)"
+      [warehouseName]="getWarehouseName(selectedPurchase.warehouseId)"
+      (close)="closePurchaseInvoice()">
+    </app-purchase-invoice>
+  </div>
+</div>

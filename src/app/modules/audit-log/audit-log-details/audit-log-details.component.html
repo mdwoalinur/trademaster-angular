@@ -1,0 +1,82 @@
+<div class="container mt-4 audit-log-details-page">
+  <div class="card shadow">
+    <div class="card-header audit-details-header d-flex justify-content-between align-items-center">
+      <h3 class="mb-0">{{ 'AUDIT.DETAILS_TITLE' | translate }}</h3>
+      <button class="btn btn-light btn-sm" (click)="goBack()">
+        <i class="bi bi-arrow-left"></i> {{ 'AUDIT.BACK_TO_LIST' | translate }}
+      </button>
+    </div>
+    <div class="card-body">
+      <div *ngIf="loading" class="text-center py-5">
+        <div class="spinner-border text-primary"></div>
+        <p class="mt-2">{{ 'AUDIT.LOADING_DETAILS' | translate }}</p>
+      </div>
+
+      <div *ngIf="!loading && log as l">
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <div class="info-group">
+              <label class="text-muted">{{ 'AUDIT.LOG_ID' | translate }}</label>
+              <div class="fw-bold">{{ l.logId }}</div>
+            </div>
+            <div class="info-group mt-2">
+              <label class="text-muted">{{ 'AUDIT.USER' | translate }}</label>
+              <div>{{ l.username }} (ID: {{ l.userId }})</div>
+            </div>
+            <div class="info-group mt-2">
+              <label class="text-muted">{{ 'AUDIT.ACTION' | translate }}</label>
+              <div>
+                <span class="badge" [class]="getActionBadgeClass(l.action)">
+                  {{ getActionLabelKey(l.action) | translate }}
+                </span>
+              </div>
+            </div>
+            <div class="info-group mt-2">
+              <label class="text-muted">{{ 'AUDIT.STATUS' | translate }}</label>
+              <div>
+                <span class="badge" [class]="getOperationStatus(l) === 'FAILED' ? 'bg-danger' : 'bg-success'">
+                  {{ ('AUDIT.STATUS_' + getOperationStatus(l)) | translate }}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="info-group">
+              <label class="text-muted">{{ 'AUDIT.ENTITY' | translate }}</label>
+              <div>{{ l.entityType }} / {{ l.entityId }}</div>
+            </div>
+            <div class="info-group mt-2">
+              <label class="text-muted">{{ 'AUDIT.IP_ADDRESS' | translate }}</label>
+              <div>{{ l.ipAddress || '-' }}</div>
+            </div>
+            <div class="info-group mt-2">
+              <label class="text-muted">{{ 'AUDIT.TIME' | translate }}</label>
+              <div>{{ formatDate(l.createdAt) }}</div>
+            </div>
+            <div class="info-group mt-2">
+              <label class="text-muted">{{ 'AUDIT.USER_AGENT' | translate }}</label>
+              <div class="small text-break">{{ l.userAgent || '-' }}</div>
+            </div>
+          </div>
+        </div>
+
+        <hr>
+
+        <div class="mb-3">
+          <h5 class="section-title">{{ 'AUDIT.OLD_VALUE' | translate }}</h5>
+          <pre class="json-viewer">{{ formatValue(l.oldValue) }}</pre>
+        </div>
+
+        <div class="mb-3">
+          <h5 class="section-title">{{ 'AUDIT.NEW_VALUE' | translate }}</h5>
+          <pre class="json-viewer">{{ formatValue(l.newValue) }}</pre>
+        </div>
+      </div>
+
+      <div *ngIf="!loading && !log" class="text-center py-5">
+        <i class="bi bi-exclamation-triangle" style="font-size: 48px;"></i>
+        <p class="mt-2">{{ 'AUDIT.NOT_FOUND' | translate }}</p>
+      </div>
+    </div>
+  </div>
+</div>

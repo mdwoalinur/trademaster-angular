@@ -1,0 +1,116 @@
+<div class="container-fluid mt-4 audit-log-page">
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <div>
+      <h2 class="page-title mb-1">{{ 'AUDIT.TITLE' | translate }}</h2>
+      <p class="text-muted mb-0">{{ 'AUDIT.SUBTITLE' | translate }}</p>
+    </div>
+    <button class="btn btn-outline-success" (click)="exportCsv()" [disabled]="loading || totalElements === 0">
+      <i class="bi bi-download"></i> {{ 'AUDIT.EXPORT_CSV' | translate }}
+    </button>
+  </div>
+
+  <div class="card mb-3 audit-filter-card">
+    <div class="card-body">
+      <div class="row g-3 align-items-end">
+        <div class="col-sm-6 col-lg-2">
+          <label class="form-label">{{ 'AUDIT.USER_ID' | translate }}</label>
+          <input type="number" class="form-control" [placeholder]="'AUDIT.USER_ID' | translate" [(ngModel)]="filterUserId">
+        </div>
+        <div class="col-sm-6 col-lg-2">
+          <label class="form-label">{{ 'AUDIT.ACTION' | translate }}</label>
+          <select class="form-select" [(ngModel)]="filterAction">
+            <option value="">{{ 'AUDIT.ALL_ACTIONS' | translate }}</option>
+            <option *ngFor="let a of actions" [value]="a">{{ getActionLabelKey(a) | translate }}</option>
+          </select>
+        </div>
+        <div class="col-sm-6 col-lg-2">
+          <label class="form-label">{{ 'AUDIT.ENTITY' | translate }}</label>
+          <select class="form-select" [(ngModel)]="filterEntityType">
+            <option value="">{{ 'AUDIT.ALL_ENTITIES' | translate }}</option>
+            <option *ngFor="let e of entityTypes" [value]="e">{{ e }}</option>
+          </select>
+        </div>
+        <div class="col-sm-6 col-lg-4">
+          <label class="form-label">{{ 'COMMON.SEARCH' | translate }}</label>
+          <input type="text" class="form-control" [placeholder]="'AUDIT.SEARCH_PLACEHOLDER' | translate" [(ngModel)]="filterSearch" (keyup.enter)="loadLogs()">
+        </div>
+        <div class="col-lg-2 d-flex gap-2">
+          <button class="btn btn-primary flex-fill" (click)="loadLogs()">
+            <i class="bi bi-search"></i> {{ 'COMMON.SEARCH' | translate }}
+          </button>
+          <button class="btn btn-outline-secondary" (click)="resetFilters()">{{ 'COMMON.RESET' | translate }}</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary"></div>
+    <p class="mt-2 text-muted">{{ 'COMMON.LOADING' | translate }}</p>
+  </div>
+
+  <div *ngIf="!loading" class="table-responsive audit-table-wrapper">
+    <table class="table table-hover table-bordered audit-table">
+      <thead class="theme-table-header">
+        <tr>
+          <th>{{ 'AUDIT.LOG_ID' | translate }}</th>
+          <th>{{ 'AUDIT.USER' | translate }}</th>
+          <th>{{ 'AUDIT.ACTION' | translate }}</th>
+          <th>{{ 'AUDIT.ENTITY' | translate }}</th>
+          <th>{{ 'AUDIT.ENTITY_ID' | translate }}</th>
+          <th>{{ 'AUDIT.STATUS' | translate }}</th>
+          <th>{{ 'AUDIT.TIME' | translate }}</th>
+          <th>{{ 'AUDIT.IP_ADDRESS' | translate }}</th>
+          <th class="text-center">{{ 'COMMON.ACTIONS' | translate }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let log of logs">
+          <td>{{ log.logId }}</td>
+          <td>
+            <div class="fw-semibold">{{ log.username || 'system' }}</div>
+            <small class="text-muted">ID: {{ log.userId }}</small>
+          </td>
+          <td>
+            <span class="badge" [class]="getActionBadgeClass(log.action)">
+              {{ getActionLabelKey(log.action) | translate }}
+            </span>
+          </td>
+          <td>{{ log.entityType }}</td>
+          <td>{{ log.entityId }}</td>
+          <td>
+            <span class="badge" [class]="getOperationStatus(log) === 'FAILED' ? 'bg-danger' : 'bg-success'">
+              {{ ('AUDIT.STATUS_' + getOperationStatus(log)) | translate }}
+            </span>
+          </td>
+          <td>{{ log.createdAt | date:'medium' }}</td>
+          <td>{{ log.ipAddress || '-' }}</td>
+          <td class="text-center">
+            <button class="btn btn-sm btn-info" (click)="viewDetails(log)" [title]="'COMMON.VIEW' | translate">
+              <i class="bi bi-eye"></i>
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="logs.length === 0">
+          <td colspan="9" class="text-center py-4 text-muted">{{ 'AUDIT.NO_LOGS' | translate }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="totalPages > 1" class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-3">
+    <div>
+      {{ 'COMMON.SHOWING' | translate }}
+      {{ (currentPage - 1) * pageSize + 1 }} -
+      {{ Math.min(currentPage * pageSize, totalElements) }}
+      {{ 'COMMON.OF' | translate }} {{ totalElements }}
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <button class="btn btn-sm btn-outline-secondary" (click)="firstPage()" [disabled]="currentPage === 1"><i class="bi bi-chevron-double-left"></i></button>
+      <button class="btn btn-sm btn-outline-secondary" (click)="previousPage()" [disabled]="currentPage === 1"><i class="bi bi-chevron-left"></i></button>
+      <span>{{ 'COMMON.PAGE' | translate }} {{ currentPage }} {{ 'COMMON.OF' | translate }} {{ totalPages }}</span>
+      <button class="btn btn-sm btn-outline-secondary" (click)="nextPage()" [disabled]="currentPage === totalPages"><i class="bi bi-chevron-right"></i></button>
+      <button class="btn btn-sm btn-outline-secondary" (click)="lastPage()" [disabled]="currentPage === totalPages"><i class="bi bi-chevron-double-right"></i></button>
+    </div>
+  </div>
+</div>

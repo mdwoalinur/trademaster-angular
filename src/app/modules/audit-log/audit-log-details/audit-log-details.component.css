@@ -1,0 +1,39 @@
+.audit-log-details-page {
+  min-width: 0;
+}
+
+.audit-details-header {
+  background: var(--tm-primary, #149447);
+  color: #fff;
+}
+
+.info-group label {
+  font-size: 0.8rem;
+  margin-bottom: 2px;
+  display: block;
+}
+
+.info-group div {
+  font-size: 1rem;
+}
+
+.section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  border-left: 4px solid var(--tm-primary, #149447);
+  padding-left: 10px;
+  margin-bottom: 0.6rem;
+}
+
+.json-viewer {
+  background: var(--tm-card-bg, #f8f9fa);
+  border: 1px solid var(--tm-border-color, #dee2e6);
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 13px;
+  font-family: 'Courier New', monospace;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 300px;
+  overflow: auto;
+}

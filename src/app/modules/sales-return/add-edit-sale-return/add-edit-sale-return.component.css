@@ -1,0 +1,9 @@
+.container {
+    max-width: 1400px;
+}
+thead th {
+    background: var(--tm-table-header-bg);
+    color: var(--tm-table-header-text);
+    border-color: var(--tm-table-header-border);
+    font-weight: 600;
+}

@@ -1,0 +1,17 @@
+.container {
+    max-width: 1400px;
+}
+.badge {
+    font-weight: 500;
+    padding: 5px 10px;
+    border-radius: 20px;
+}
+.select-col {
+    width: 44px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.form-check-input {
+    cursor: pointer;
+}

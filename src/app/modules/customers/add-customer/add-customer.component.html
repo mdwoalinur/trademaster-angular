@@ -1,0 +1,200 @@
+<div class="container mt-4">
+  <div class="card shadow">
+    <div class="card-header bg-primary text-white">
+      <h3>{{ isEdit ? 'Edit Customer' : 'Add New Customer' }}</h3>
+    </div>
+    <div class="card-body">
+      <form (ngSubmit)="save()">
+        <div class="customer-form-layout">
+          <div class="customer-main-fields">
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Customer Code *</label>
+            <input type="text" class="form-control" [(ngModel)]="customer.customerCode" name="code" required>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Customer Name *</label>
+            <input type="text" class="form-control" [(ngModel)]="customer.customerName" name="name" required>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Customer Type</label>
+            <select class="form-select" [(ngModel)]="customer.customerType" name="type">
+              <option *ngFor="let type of customerTypes" [value]="type">{{ type }}</option>
+            </select>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">GST Number</label>
+            <input type="text" class="form-control" [(ngModel)]="customer.gstNumber" name="gst">
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-control" [(ngModel)]="customer.email" name="email">
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Phone</label>
+            <input type="text" class="form-control" [(ngModel)]="customer.phone" name="phone">
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Mobile</label>
+            <input type="text" class="form-control" [(ngModel)]="customer.mobile" name="mobile">
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Address</label>
+          <textarea class="form-control" rows="2" [(ngModel)]="customer.address" name="address"></textarea>
+        </div>
+
+        <div class="row">
+          <div class="col-md-3 mb-3">
+            <label class="form-label">City</label>
+            <input type="text" class="form-control" [(ngModel)]="customer.city" name="city">
+          </div>
+          <div class="col-md-3 mb-3">
+            <label class="form-label">State</label>
+            <input type="text" class="form-control" [(ngModel)]="customer.state" name="state">
+          </div>
+          <div class="col-md-3 mb-3">
+            <label class="form-label">Postal Code</label>
+            <input type="text" class="form-control" [(ngModel)]="customer.postalCode" name="postal">
+          </div>
+          <div class="col-md-3 mb-3">
+            <label class="form-label">Country</label>
+            <input type="text" class="form-control" [(ngModel)]="customer.country" name="country">
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Credit Limit</label>
+            <input type="number" step="0.01" class="form-control" [(ngModel)]="customer.creditLimit" name="creditLimit">
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Opening Balance</label>
+            <input type="number" step="0.01" class="form-control" [(ngModel)]="customer.openingBalance" name="openingBalance" (change)="customer.currentBalance = customer.openingBalance">
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Current Balance</label>
+            <input type="number" step="0.01" class="form-control" [(ngModel)]="customer.currentBalance" name="currentBalance">
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Status</label>
+          <select class="form-select" [(ngModel)]="customer.status" name="status">
+            <option [value]="true">Active</option>
+            <option [value]="false">Inactive</option>
+          </select>
+        </div>
+          </div>
+
+          <aside class="customer-photo-panel">
+            <div class="photo-panel-title">Customer Photo</div>
+            <div
+              class="photo-upload-box"
+              (drop)="onPhotoDrop($event)"
+              (dragover)="onPhotoDragOver($event)">
+              <i class="bi bi-cloud-arrow-up"></i>
+              <strong>Drag & drop photo here</strong>
+              <span>JPG, PNG, WEBP up to 5MB</span>
+              <label class="btn btn-outline-success btn-sm mt-2">
+                Choose Photo
+                <input type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" hidden (change)="onPhotoSelected($event)">
+              </label>
+            </div>
+            <div class="text-danger small mt-2" *ngIf="photoError">{{ photoError }}</div>
+
+            <div class="photo-preview-card">
+              <div class="photo-preview-circle" *ngIf="previewPhotoUrl; else initialsPreview">
+                <img class="customer-preview-img" [src]="previewPhotoUrl" alt="Customer photo preview">
+              </div>
+              <ng-template #initialsPreview>
+                <div class="photo-preview-circle initials">{{ getCustomerInitials() }}</div>
+              </ng-template>
+              <div class="photo-preview-name">{{ customer.customerName || 'Customer preview' }}</div>
+              <div class="photo-preview-code">{{ customer.customerCode || 'No code yet' }}</div>
+              <button type="button" class="btn btn-link text-danger btn-sm" (click)="removePhoto()" *ngIf="previewPhotoUrl">
+                Remove photo
+              </button>
+            </div>
+          </aside>
+        </div>
+
+        <div class="mt-3">
+          <button type="submit" class="btn btn-primary" [disabled]="loading">
+            {{ loading ? 'Saving...' : (isEdit ? 'Update' : 'Save') }}
+          </button>
+          <button type="button" class="btn btn-secondary ms-2" (click)="cancel()">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="customer-crop-backdrop" *ngIf="cropModalOpen">
+  <div class="customer-crop-modal" (click)="$event.stopPropagation()">
+    <div class="crop-modal-header">
+      <div>
+        <h4>Adjust Customer Photo</h4>
+        <p>Drag, zoom, and resize to adjust the face.</p>
+      </div>
+      <button type="button" class="btn-close" aria-label="Close" (click)="cancelCrop()"></button>
+    </div>
+
+    <div class="crop-modal-body">
+      <div class="crop-editor">
+        <div class="crop-stage">
+          <img #cropperImage [src]="cropImageUrl" (load)="onCropperImageLoad()" alt="Adjust customer photo">
+        </div>
+      </div>
+
+      <div class="crop-preview-panel">
+        <div>
+          <span>Avatar Preview</span>
+          <small>Final circular customer image</small>
+        </div>
+        <div class="crop-live-preview customer-crop-preview-window"></div>
+
+        <div class="crop-controls">
+          <label class="form-label" for="customerCropZoom">Zoom</label>
+          <input
+            id="customerCropZoom"
+            type="range"
+            class="form-range"
+            min="0.5"
+            max="3"
+            step="0.01"
+            [value]="cropZoom"
+            (input)="onCropZoomChange($event)">
+          <div class="crop-button-row">
+            <button type="button" class="btn btn-outline-secondary btn-sm" (click)="rotateCrop(-90)">
+              <i class="bi bi-arrow-counterclockwise"></i> Rotate Left
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" (click)="rotateCrop(90)">
+              <i class="bi bi-arrow-clockwise"></i> Rotate Right
+            </button>
+            <button type="button" class="btn btn-outline-success btn-sm" (click)="resetCrop()">
+              <i class="bi bi-arrow-repeat"></i> Reset
+            </button>
+          </div>
+        </div>
+
+        <div class="crop-help">
+          <i class="bi bi-info-circle"></i>
+          <span>Resize the square crop box with the handles. The saved file remains a 400x400 image.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="crop-modal-footer">
+      <button type="button" class="btn btn-light" (click)="cancelCrop()">Cancel</button>
+      <button type="button" class="btn btn-success" (click)="applyCroppedPhoto()">Apply Photo</button>
+    </div>
+  </div>
+</div>

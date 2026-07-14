@@ -1,0 +1,106 @@
+<div class="purchase-invoice-container" id="purchase-invoice">
+  <!-- Header -->
+  <div class="invoice-header">
+    <div class="company-info">
+      <h1 class="company-name">TRADEMASTER</h1>
+      <p class="company-tagline">Smart Inventory System</p>
+      <p class="company-details">
+        123 Business Avenue, Dhaka, Bangladesh<br>
+        Phone: +880 1795479789 | Email: mdwoalinur@gmail.com
+      </p>
+    </div>
+    <div class="invoice-title">
+      <h2>PURCHASE ORDER</h2>
+      <div class="status-badge" [class]="getStatusClass(purchase?.status)">
+        {{ getStatusText(purchase?.status) }}
+      </div>
+    </div>
+  </div>
+
+  <!-- PO Details -->
+  <div class="po-details">
+    <div class="row">
+      <div class="col-6">
+        <table class="details-table">
+          <tr><td class="label">PO Number:</td><td class="value"><strong>{{ purchase?.purchaseOrderNo }}</strong></td></tr>
+          <tr><td class="label">Order Date:</td><td class="value">{{ purchase?.purchaseDate | date:'dd MMM yyyy' }}</td></tr>
+          <tr><td class="label">Expected Delivery:</td><td class="value">{{ purchase?.expectedDelivery | date:'dd MMM yyyy' }}</td></tr>
+          <tr *ngIf="purchase?.actualDelivery"><td class="label">Actual Delivery:</td><td class="value">{{ purchase?.actualDelivery | date:'dd MMM yyyy' }}</td></tr>
+        </table>
+      </div>
+      <div class="col-6">
+        <table class="details-table">
+          <tr><td class="label">Supplier:</td><td class="value">{{ supplierName }}</td></tr>
+          <tr><td class="label">Warehouse:</td><td class="value">{{ warehouseName }}</td></tr>
+          <tr><td class="label">Payment Terms:</td><td class="value">{{ purchase?.paymentTerms || 'N/A' }}</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Items Table -->
+  <table class="items-table">
+    <thead>
+      <tr>
+        <th style="width:5%">#</th>
+        <th style="width:35%">Product</th>
+        <th style="width:10%">SKU</th>
+        <th style="width:10%">Qty</th>
+        <th style="width:15%">Unit Price</th>
+        <th style="width:10%">Tax</th>
+        <th style="width:15%">Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let item of purchase?.items; let i = index">
+        <td class="text-center">{{ i + 1 }}</td>
+        <td>{{ item.productName || 'Product #' + item.productId }}</td>
+        <td class="text-center">{{ item.sku || '-' }}</td>
+        <td class="text-center">{{ item.quantity }}</td>
+        <td class="text-right">{{ item.unitPrice | currency }}</td>
+        <td class="text-center">{{ item.tax || 0 }}%</td>
+        <td class="text-right">{{ item.totalPrice || (item.quantity * item.unitPrice) | currency }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Totals -->
+  <div class="totals-section">
+    <div class="row">
+      <div class="col-7">
+        <div class="notes">
+          <p class="notes-label">Notes:</p>
+          <p>{{ purchase?.notes || '-' }}</p>
+        </div>
+      </div>
+      <div class="col-5">
+        <table class="totals-table">
+          <tr><td>Subtotal:</td><td class="text-right">{{ purchase?.subtotal | currency }}</td></tr>
+          <tr><td>Tax Amount:</td><td class="text-right">{{ purchase?.taxAmount | currency }}</td></tr>
+          <tr class="grand-total-row"><td><strong>Total:</strong></td><td class="text-right"><strong>{{ purchase?.totalAmount | currency }}</strong></td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="invoice-footer">
+    <div class="authorized-signature">
+      <p class="signature-line">Authorized By</p>
+      <p>________md. Woalinur_______</p>
+    </div>
+    <div class="thank-you">
+      <p class="generated-note">Powered by TradeMaster</p>
+    </div>
+  </div>
+</div>
+
+<!-- Print Actions -->
+<div class="print-actions no-print">
+  <button class="btn btn-primary" (click)="print()">
+    <i class="bi bi-printer"></i> Print PO
+  </button>
+  <button class="btn btn-outline-secondary" (click)="onClose()">
+    <i class="bi bi-x-circle"></i> Close
+  </button>
+</div>

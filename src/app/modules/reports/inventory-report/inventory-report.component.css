@@ -1,0 +1,16 @@
+:host {
+  display: block;
+  color: var(--tm-text);
+}
+
+.card,
+.table-responsive,
+.report-card {
+  background: var(--tm-surface);
+  border-color: var(--tm-border);
+  box-shadow: var(--tm-shadow);
+}
+
+.table {
+  margin-bottom: 0;
+}

@@ -1,0 +1,53 @@
+<section class="barcode-scanner" role="dialog" [attr.aria-label]="'BARCODE.TITLE' | translate">
+  <header class="scanner-header">
+    <div>
+      <h2><i class="bi bi-upc-scan"></i>{{ 'BARCODE.TITLE' | translate }}</h2>
+      <p>{{ 'BARCODE.INSTRUCTIONS' | translate }}</p>
+    </div>
+    <button type="button" class="icon-button" (click)="closeDialog()" [attr.aria-label]="'BARCODE.CANCEL' | translate">
+      <i class="bi bi-x-lg"></i>
+    </button>
+  </header>
+
+  <div class="scanner-preview">
+    <div [id]="readerId"></div>
+    <div class="scanner-guide" *ngIf="running" aria-hidden="true"><span></span></div>
+    <div class="scanner-state" *ngIf="starting || (!running && !errorKey)">
+      <span class="spinner-border spinner-border-sm"></span>
+      <span>{{ statusKey | translate }}</span>
+    </div>
+  </div>
+
+  <div class="scanner-status" [class.error]="errorKey">
+    <i class="bi" [ngClass]="errorKey ? 'bi-exclamation-triangle' : 'bi-lightbulb'"></i>
+    <span>{{ (errorKey || 'BARCODE.LIGHTING_HINT') | translate }}</span>
+  </div>
+
+  <div class="scanner-controls">
+    <button type="button" class="scanner-button" *ngIf="errorKey" (click)="retry()" [disabled]="starting">
+      <i class="bi bi-arrow-clockwise"></i>{{ 'BARCODE.RETRY' | translate }}
+    </button>
+    <button type="button" class="scanner-button" *ngIf="cameras.length > 1" (click)="switchCamera()" [disabled]="starting">
+      <i class="bi bi-arrow-repeat"></i>{{ 'BARCODE.SWITCH_CAMERA' | translate }}
+    </button>
+    <button type="button" class="scanner-button" *ngIf="torchSupported" (click)="toggleTorch()">
+      <i class="bi" [ngClass]="torchEnabled ? 'bi-lightbulb-fill' : 'bi-lightbulb'"></i>
+      {{ (torchEnabled ? 'BARCODE.TORCH_OFF' : 'BARCODE.TORCH_ON') | translate }}
+    </button>
+  </div>
+
+  <form class="manual-entry" (ngSubmit)="submitManualCode()">
+    <label for="manual-barcode">{{ 'BARCODE.MANUAL_LABEL' | translate }}</label>
+    <div class="manual-row">
+      <input id="manual-barcode" name="manualBarcode" type="text" [(ngModel)]="manualCode"
+             [placeholder]="'BARCODE.MANUAL_PLACEHOLDER' | translate" autocomplete="off">
+      <button type="submit" [disabled]="!manualCode.trim()">
+        <i class="bi bi-check-lg"></i>{{ 'BARCODE.USE_CODE' | translate }}
+      </button>
+    </div>
+  </form>
+
+  <footer class="scanner-footer">
+    <button type="button" class="cancel-button" (click)="closeDialog()">{{ 'BARCODE.CANCEL' | translate }}</button>
+  </footer>
+</section>

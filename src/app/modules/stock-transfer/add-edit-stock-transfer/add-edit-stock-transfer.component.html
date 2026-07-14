@@ -1,0 +1,99 @@
+<div class="container mt-4">
+  <div class="card shadow">
+    <div class="card-header bg-primary text-white">
+      <h3 class="mb-0">New Stock Transfer</h3>
+    </div>
+    <div class="card-body">
+      <form [formGroup]="transferForm" (ngSubmit)="onSubmit()">
+        <!-- Warehouse Selection -->
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-bold">From Warehouse *</label>
+            <select class="form-select" formControlName="fromWarehouseId">
+              <option [value]="null">-- Select Source Warehouse --</option>
+              <option *ngFor="let w of warehouses" [value]="w.id">
+                {{ w.name }}
+              </option>
+            </select>
+            <div class="invalid-feedback" *ngIf="transferForm.get('fromWarehouseId')?.invalid && transferForm.get('fromWarehouseId')?.touched">
+              Please select a source warehouse.
+            </div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold">To Warehouse *</label>
+            <select class="form-select" formControlName="toWarehouseId">
+              <option [value]="null">-- Select Destination Warehouse --</option>
+              <option *ngFor="let w of warehouses" [value]="w.id">
+                {{ w.name }}
+              </option>
+            </select>
+            <div class="invalid-feedback" *ngIf="transferForm.get('toWarehouseId')?.invalid && transferForm.get('toWarehouseId')?.touched">
+              Please select a destination warehouse.
+            </div>
+          </div>
+        </div>
+
+        <!-- Items Section -->
+        <div class="mb-3">
+          <label class="form-label fw-bold">Transfer Items</label>
+          <div class="table-responsive">
+            <table class="table table-bordered">
+              <thead class="theme-table-header">
+                <tr>
+                  <th>Product</th>
+                  <th>Quantity</th>
+                  <th style="width: 60px">Actions</th>
+                </tr>
+              </thead>
+              <tbody formArrayName="items">
+                <tr *ngFor="let item of itemsArray.controls; let i = index" [formGroupName]="i">
+                  <td>
+                    <select class="form-select" formControlName="productId">
+                      <option [value]="null">-- Select Product --</option>
+                      <option *ngFor="let p of products" [value]="p.id">
+                        {{ p.productName }}
+                      </option>
+                    </select>
+                  </td>
+                  <td>
+                    <input type="number" class="form-control" formControlName="quantity" placeholder="Quantity" min="1">
+                  </td>
+                  <td class="text-center">
+                    <button type="button" class="btn btn-sm btn-danger" (click)="removeItem(i)" *ngIf="itemsArray.length > 1">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <button type="button" class="btn btn-sm btn-outline-primary" (click)="addItem()">
+            <i class="bi bi-plus-circle"></i> Add Item
+          </button>
+        </div>
+
+        <!-- Reason & Notes -->
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-bold">Reason (optional)</label>
+            <input type="text" class="form-control" formControlName="reason" placeholder="e.g., Stock balancing, Transfer to branch">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold">Notes (optional)</label>
+            <input type="text" class="form-control" formControlName="notes" placeholder="Additional notes">
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="d-flex justify-content-between mt-4">
+          <button type="button" class="btn btn-secondary" (click)="cancel()">
+            <i class="bi bi-x-circle"></i> Cancel
+          </button>
+          <button type="submit" class="btn btn-primary" [disabled]="transferForm.invalid">
+            <i class="bi bi-check-circle"></i> Submit Transfer
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,90 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Wastage Categories</h2>
+    <button class="btn btn-primary" routerLink="/inventory/wastage/categories/add">
+      <i class="bi bi-plus-circle"></i> Add Category
+    </button>
+  </div>
+
+  <!--Filter Card -->
+  <div class="card mb-3">
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-5">
+          <input type="text" class="form-control" placeholder="Search by code, name, description..." 
+                 [(ngModel)]="searchTerm" (input)="applyFilters()">
+        </div>
+        <div class="col-md-3">
+          <select class="form-select" [(ngModel)]="selectedStatus" (change)="applyFilters()">
+            <option value="">All Status</option>
+            <option *ngFor="let opt of statusOptions" [value]="opt">{{ opt }}</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <button class="btn btn-outline-secondary w-100" (click)="resetFilters()">
+            <i class="bi bi-eraser"></i> Reset
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary"></div>
+    <p class="mt-2">Loading categories...</p>
+  </div>
+
+  <div *ngIf="!loading && filteredCategories.length === 0" class="alert alert-info text-center py-4">
+    <i class="bi bi-inbox" style="font-size: 48px;"></i>
+    <h5 class="mt-2">No wastage categories found</h5>
+    <p>Click "Add Category" to create a new category.</p>
+  </div>
+
+  <div *ngIf="!loading && filteredCategories.length > 0" class="table-responsive">
+    <table class="table table-bordered table-hover">
+      <thead class="theme-table-header">
+        <tr>
+          <th>#</th>
+          <th>Code</th>
+          <th>Name</th>
+          <th>Description</th>
+          <th>Loss %</th>
+          <th>Status</th>
+          <th style="min-width: 100px;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Changed from categories to filteredCategories -->
+        <tr *ngFor="let c of filteredCategories; let i = index">
+          <td>{{ i + 1 }}</td>
+          <td><strong>{{ c.categoryCode }}</strong></td>
+          <td>{{ c.categoryName }}</td>
+          <td>{{ c.description || '-' }}</td>
+          <td>{{ c.lossPercentage || 0 }}%</td>
+          <td>
+            <span class="badge" [class.bg-success]="c.status" [class.bg-secondary]="!c.status">
+              {{ c.status ? 'Active' : 'Inactive' }}
+            </span>
+          </td>
+          <td>
+            <button class="btn btn-sm btn-outline-warning me-1" 
+                    [routerLink]="['/inventory/wastage/categories/edit', c.categoryId]"
+                    title="Edit">
+              <i class="bi bi-pencil"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-danger" 
+                    (click)="deleteCategory(c.categoryId)"
+                    title="Delete">
+              <i class="bi bi-trash"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  
+  <!--  Record count summary -->
+  <div class="text-muted mt-2" *ngIf="!loading && filteredCategories.length > 0">
+    Showing {{ filteredCategories.length }} of {{ categories.length }} categories
+  </div>
+</div>

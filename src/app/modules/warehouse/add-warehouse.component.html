@@ -1,0 +1,63 @@
+<div class="container mt-4">
+  <div class="card shadow">
+    <div class="card-header bg-primary text-white">
+      <h3>{{ isEdit ? 'Edit Warehouse' : 'Add New Warehouse' }}</h3>
+    </div>
+    <div class="card-body">
+      <form (ngSubmit)="save()">
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Warehouse Code *</label>
+            <input type="text" class="form-control" [(ngModel)]="warehouse.warehouseCode" name="code" required>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Warehouse Name *</label>
+            <input type="text" class="form-control" [(ngModel)]="warehouse.name" name="name" required>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Location</label>
+            <input type="text" class="form-control" [(ngModel)]="warehouse.location" name="location">
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Capacity</label>
+            <input type="number" class="form-control" [(ngModel)]="warehouse.capacity" name="capacity">
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Manager Name</label>
+            <input type="text" class="form-control" [(ngModel)]="warehouse.managerName" name="manager">
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Contact Phone</label>
+            <input type="text" class="form-control" [(ngModel)]="warehouse.contactPhone" name="phone">
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Contact Email</label>
+          <input type="email" class="form-control" [(ngModel)]="warehouse.contactEmail" name="email">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Status</label>
+          <select class="form-select" [(ngModel)]="warehouse.status" name="status">
+            <option value="ACTIVE">Active</option>
+            <option value="INACTIVE">Inactive</option>
+          </select>
+        </div>
+
+        <div class="mt-3">
+          <button type="submit" class="btn btn-primary" [disabled]="loading">
+            {{ loading ? 'Saving...' : (isEdit ? 'Update' : 'Save') }}
+          </button>
+          <button type="button" class="btn btn-secondary ms-2" (click)="cancel()">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

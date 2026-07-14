@@ -1,0 +1,73 @@
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Sales Returns</h2>
+        <button class="btn btn-primary" (click)="addReturn()">
+            <i class="bi bi-plus-circle"></i> New Return
+        </button>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <select class="form-select" [(ngModel)]="searchStatus" (change)="onStatusChange()">
+                        <option *ngFor="let s of statusOptions" [value]="s">{{ s || 'All Status' }}</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-outline-secondary w-100" (click)="resetFilters()">
+                        <i class="bi bi-eraser"></i> Reset
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div *ngIf="loading" class="text-center py-5"><div class="spinner-border text-primary"></div></div>
+
+    <div *ngIf="!loading" class="table-responsive">
+        <table class="table table-hover table-bordered">
+            <thead class="theme-table-header">
+                <tr>
+                    <th>Return #</th><th>Invoice #</th><th>Return Date</th><th>Total Amount</th><th>Status</th><th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let r of returns">
+                    <td>{{ r.returnNo }}</td>
+                    <td>{{ r.saleId }} (Invoice)</td>
+                    <td>{{ r.returnDate ? formatDate(r.returnDate) : '' }}</td>
+                    <td>{{ formatCurrency(r.totalReturnAmount) }}</td>
+                    <td><span class="badge" [class]="getStatusBadge(r.status)">{{ r.status }}</span></td>
+                    <td>
+                       
+<button class="btn btn-sm btn-info me-1" (click)="viewReturn(r.returnId ?? 0)" title="View">
+    <i class="bi bi-eye"></i>
+</button>
+<button *ngIf="r.status === 'PENDING'" class="btn btn-sm btn-success me-1" (click)="approveReturn(r.returnId ?? 0)" title="Approve">
+    <i class="bi bi-check-lg"></i>
+</button>
+<button *ngIf="r.status === 'PENDING'" class="btn btn-sm btn-warning me-1" (click)="rejectReturn(r.returnId ?? 0)" title="Reject">
+    <i class="bi bi-x-lg"></i>
+</button>
+<button *ngIf="r.status === 'PENDING'" class="btn btn-sm btn-danger" (click)="deleteReturn(r.returnId ?? 0)" title="Delete">
+    <i class="bi bi-trash"></i>
+</button>
+                    </td>
+                </tr>
+                <tr *ngIf="returns.length === 0"><td colspan="6" class="text-center">No returns found</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div *ngIf="totalPages > 1" class="d-flex justify-content-between mt-3">
+        <div>Showing {{ (currentPage-1)*pageSize+1 }} - {{ Math.min(currentPage*pageSize, totalElements) }} of {{ totalElements }}</div>
+        <div>
+            <button class="btn btn-sm btn-outline-secondary me-2" (click)="firstPage()" [disabled]="currentPage===1"><i class="bi bi-chevron-double-left"></i></button>
+            <button class="btn btn-sm btn-outline-secondary me-2" (click)="previousPage()" [disabled]="currentPage===1"><i class="bi bi-chevron-left"></i></button>
+            <span>Page {{ currentPage }} of {{ totalPages }}</span>
+            <button class="btn btn-sm btn-outline-secondary ms-2" (click)="nextPage()" [disabled]="currentPage===totalPages"><i class="bi bi-chevron-right"></i></button>
+            <button class="btn btn-sm btn-outline-secondary ms-2" (click)="lastPage()" [disabled]="currentPage===totalPages"><i class="bi bi-chevron-double-right"></i></button>
+        </div>
+    </div>
+</div>

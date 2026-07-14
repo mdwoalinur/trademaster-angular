@@ -1,0 +1,11 @@
+<div class="product-mini" [class.product-mini-compact]="compact">
+  <img
+    class="product-mini-thumb"
+    [src]="resolvedImageUrl"
+    [alt]="productName || 'Product image'"
+    (error)="onImageError($event)">
+  <div class="product-mini-info">
+    <div class="product-mini-name">{{ productName || 'Unknown Product' }}</div>
+    <div class="product-mini-meta" *ngIf="sku || meta">{{ sku || meta }}</div>
+  </div>
+</div>

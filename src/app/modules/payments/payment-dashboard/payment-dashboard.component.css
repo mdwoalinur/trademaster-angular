@@ -1,0 +1,130 @@
+.payment-dashboard-page {
+  color: var(--tm-text);
+  padding: 24px;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 18px;
+}
+
+.page-header h2 {
+  margin: 0;
+  font-weight: 800;
+}
+
+.page-header p,
+.panel small {
+  color: var(--tm-text-muted);
+}
+
+.date-filter {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.dashboard-grid article,
+.panel {
+  background: var(--tm-surface);
+  border: 1px solid var(--tm-border);
+  border-radius: 8px;
+  box-shadow: var(--tm-shadow);
+}
+
+.dashboard-grid article {
+  padding: 16px;
+  border-top: 3px solid var(--tm-primary);
+}
+
+.dashboard-grid span {
+  display: block;
+  color: var(--tm-text-muted);
+  font-size: 13px;
+}
+
+.dashboard-grid strong {
+  display: block;
+  margin-top: 6px;
+  font-size: 22px;
+}
+
+.content-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.panel {
+  padding: 16px;
+  min-width: 0;
+}
+
+.panel h5 {
+  margin: 0 0 12px;
+  font-weight: 700;
+}
+
+.balance-row,
+.method-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--tm-border);
+}
+
+.balance-row {
+  grid-template-columns: 1fr auto;
+}
+
+.balance-row:last-child,
+.method-row:last-child {
+  border-bottom: 0;
+}
+
+.empty-state {
+  color: var(--tm-text-muted);
+  border: 1px dashed var(--tm-border);
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+}
+
+@media (max-width: 1100px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .payment-dashboard-page {
+    padding: 16px;
+  }
+
+  .page-header,
+  .date-filter {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}

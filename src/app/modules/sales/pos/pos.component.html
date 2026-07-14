@@ -1,0 +1,299 @@
+<div class="pos-page">
+  <div class="pos-header">
+    <div class="pos-title-block">
+      <div class="pos-title-icon">
+        <i class="bi bi-cart-check"></i>
+      </div>
+      <div>
+        <h2>Point of Sale</h2>
+        <p>Fast retail checkout and billing</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="pos-layout">
+    <section class="pos-products-panel">
+      <div class="pos-search-row">
+        <div class="pos-search-box">
+          <i class="bi bi-search"></i>
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Search by name, SKU or barcode..."
+            [(ngModel)]="searchTerm"
+            (input)="searchProducts()"
+            autofocus>
+        </div>
+        <button class="pos-scan-btn" type="button" (click)="openScanner()">
+          <i class="bi bi-upc-scan"></i>
+          Scan Barcode
+        </button>
+      </div>
+
+      <div class="pos-category-chips">
+        <button type="button" [class.active]="!selectedCategory" (click)="selectCategory('')">
+          All Products
+        </button>
+        <button
+          type="button"
+          *ngFor="let categoryId of uniqueCategoryIds"
+          [class.active]="selectedCategory === categoryId.toString()"
+          (click)="selectCategory(categoryId.toString())">
+          Category {{ categoryId }}
+        </button>
+      </div>
+
+      <div *ngIf="loading" class="pos-loading-state">
+        <div class="spinner-border text-success"></div>
+        <span>Loading products...</span>
+      </div>
+
+      <div *ngIf="!loading && filteredProducts.length" class="pos-product-grid">
+        <article *ngFor="let p of visibleProducts" class="pos-product-card">
+          <button type="button" class="pos-card-hit-area" (click)="addToCart(p)" [attr.aria-label]="'Add ' + p.productName"></button>
+
+          <div class="pos-product-image">
+            <img
+              *ngIf="p.imageUrl; else productIcon"
+              [src]="getProductImageUrl(p)"
+              [alt]="p.productName"
+              (error)="onProductImageError($event)">
+            <ng-template #productIcon>
+              <i class="bi bi-box-seam"></i>
+            </ng-template>
+          </div>
+
+          <div class="pos-product-info">
+            <h6>{{ p.productName }}</h6>
+            <p>{{ p.sku || p.productCode || 'No SKU' }}</p>
+            <strong>{{ formatCurrency(p.sellingPrice) }}</strong>
+          </div>
+
+          <div class="pos-product-footer">
+            <span class="pos-stock-badge" [ngClass]="getStockBadgeClass(p.id!)">
+              <i class="bi bi-box-seam"></i>
+              {{ getStockQuantity(p.id!) }} in stock
+            </span>
+            <button type="button" class="pos-add-cart-btn" (click)="addToCart(p); $event.stopPropagation()" aria-label="Add to cart">
+              <i class="bi bi-cart-plus"></i>
+            </button>
+          </div>
+        </article>
+      </div>
+
+      <div *ngIf="!loading && filteredProducts.length === 0" class="pos-empty-products">
+        <i class="bi bi-search"></i>
+        <h5>No products found</h5>
+        <p>Try another search or category</p>
+      </div>
+
+      <div class="pos-product-footer-bar" *ngIf="!loading && filteredProducts.length">
+        <span>
+          Showing {{ ((currentPage - 1) * pageSize) + 1 }} to
+          {{ showingEnd }} of
+          {{ filteredProducts.length }} products
+        </span>
+        <div class="pos-pagination">
+          <button type="button" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">
+            <i class="bi bi-chevron-left"></i>
+          </button>
+          <button
+            type="button"
+            *ngFor="let page of paginationPages"
+            [class.active]="currentPage === page"
+            (click)="goToPage(page)">
+            {{ page }}
+          </button>
+          <button type="button" (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages">
+            <i class="bi bi-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="pos-bottom-summary">
+        <div class="pos-summary-card">
+          <div class="summary-icon products"><i class="bi bi-box-seam"></i></div>
+          <div>
+            <span>Total Items</span>
+            <strong>{{ products.length }}</strong>
+            <small>Across inventory</small>
+          </div>
+        </div>
+
+        <div class="pos-summary-card">
+          <div class="summary-icon cart"><i class="bi bi-cart"></i></div>
+          <div>
+            <span>Cart Items</span>
+            <strong>{{ getTotalItems() }}</strong>
+            <small>Current selection</small>
+          </div>
+        </div>
+
+        <div class="pos-summary-card">
+          <div class="summary-icon amount"><i class="bi bi-wallet2"></i></div>
+          <div>
+            <span>Total Amount</span>
+            <strong>{{ formatCurrency(total) }}</strong>
+            <small>After discount & tax</small>
+          </div>
+        </div>
+
+        <div class="pos-summary-card">
+          <div class="summary-icon due"><i class="bi bi-pie-chart"></i></div>
+          <div>
+            <span>Payment Due</span>
+            <strong>{{ formatCurrency(getDueAmount()) }}</strong>
+            <small>Change: {{ formatCurrency(change) }}</small>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="pos-cart-panel">
+      <div class="pos-cart-header">
+        <div class="pos-cart-title">
+          <i class="bi bi-cart3"></i>
+          <h5>Shopping Cart</h5>
+          <span>{{ cart.length }}</span>
+        </div>
+        <button class="pos-clear-cart-btn" type="button" (click)="clearCart()" [disabled]="cart.length === 0">
+          <i class="bi bi-trash"></i>
+          Clear Cart
+        </button>
+      </div>
+
+      <div class="pos-cart-items" [class.is-empty]="cart.length === 0">
+        <div *ngFor="let item of cart" class="pos-cart-item">
+          <div class="pos-cart-thumb">
+            <img [src]="getCartItemImageUrl(item)" [alt]="item.productName" (error)="onProductImageError($event)">
+          </div>
+
+          <div class="pos-cart-info">
+            <h6>{{ item.productName }}</h6>
+            <p>{{ item.sku || 'No SKU' }}</p>
+            <strong>{{ formatCurrency(item.unitPrice) }}</strong>
+          </div>
+
+          <div class="pos-cart-controls">
+            <div class="pos-qty-control">
+              <button type="button" (click)="updateCartItem(item, item.quantity - 1)">
+                <i class="bi bi-dash"></i>
+              </button>
+              <span>{{ item.quantity }}</span>
+              <button type="button" (click)="updateCartItem(item, item.quantity + 1)">
+                <i class="bi bi-plus"></i>
+              </button>
+            </div>
+            <div class="pos-cart-line-total">{{ formatCurrency(item.total) }}</div>
+            <button class="pos-remove-cart-btn" type="button" (click)="removeFromCart(item)" aria-label="Remove item">
+              <i class="bi bi-trash"></i>
+            </button>
+          </div>
+        </div>
+
+        <div *ngIf="cart.length === 0" class="pos-empty-cart">
+          <i class="bi bi-cart3"></i>
+          <h5>Your cart is empty</h5>
+          <p>Click on products to add them</p>
+        </div>
+      </div>
+
+      <div class="pos-total-section">
+        <div class="pos-total-row">
+          <span>Subtotal ({{ getTotalItems() }} items)</span>
+          <strong>{{ formatCurrency(subtotal) }}</strong>
+        </div>
+        <div class="pos-total-row discount-row">
+          <span>Discount</span>
+          <div class="discount-control">
+            <span>%</span>
+            <input type="number" class="form-control" [(ngModel)]="discountPercent" (input)="calculateTotals()" min="0" max="100" step="0.5">
+          </div>
+          <strong>-{{ formatCurrency(discountAmount) }}</strong>
+        </div>
+        <div class="pos-total-row">
+          <span>Tax ({{ taxRate }}%)</span>
+          <strong>{{ formatCurrency(taxAmount) }}</strong>
+        </div>
+        <div class="pos-grand-total">
+          <span>Grand Total</span>
+          <strong>{{ formatCurrency(total) }}</strong>
+        </div>
+      </div>
+
+      <div class="pos-checkout-grid">
+        <div class="pos-checkout-field">
+          <label>Customer</label>
+          <select class="form-select" [(ngModel)]="selectedCustomerId">
+            <option [ngValue]="null">Walk-in Customer</option>
+            <option *ngFor="let c of customers" [ngValue]="c.customerId">{{ c.customerName }}</option>
+          </select>
+        </div>
+
+        <div class="pos-checkout-field">
+          <label>Warehouse <span>*</span></label>
+          <select class="form-select" [(ngModel)]="selectedWarehouseId" (change)="onWarehouseChange()" required>
+            <option [ngValue]="null">Select Warehouse</option>
+            <option *ngFor="let w of warehouses" [ngValue]="w.id">{{ w.name }}</option>
+          </select>
+        </div>
+
+        <div class="pos-checkout-field">
+          <label>Payment Method</label>
+          <select class="form-select" [(ngModel)]="paymentMethod">
+            <option value="CASH">Cash</option>
+            <option value="BANK">Bank Transfer</option>
+            <option value="MOBILE_BANKING">Mobile Banking</option>
+          </select>
+        </div>
+
+        <div class="pos-checkout-field">
+          <label>Paid Amount</label>
+          <div class="pos-money-input">
+            <span>BDT</span>
+            <input type="number" class="form-control" [(ngModel)]="paidAmount" (input)="calculateChange()" min="0" step="0.01">
+          </div>
+        </div>
+
+        <div class="pos-checkout-field">
+          <label>Change Amount</label>
+          <div class="pos-money-input readonly">
+            <span>BDT</span>
+            <input type="number" class="form-control" [(ngModel)]="change" readonly>
+          </div>
+        </div>
+
+        <div class="pos-checkout-field">
+          <label>Notes (Optional)</label>
+          <textarea class="form-control" [(ngModel)]="notes" rows="2" placeholder="Add notes here..."></textarea>
+        </div>
+      </div>
+
+      <button class="pos-complete-btn" type="button" (click)="showPrintDialog()" [disabled]="submitting || cart.length === 0 || !selectedWarehouseId">
+        <i class="bi bi-check-circle" *ngIf="!submitting"></i>
+        <span *ngIf="submitting" class="spinner-border spinner-border-sm"></span>
+        {{ submitting ? 'Processing...' : 'Complete Sale' }}
+      </button>
+    </aside>
+  </div>
+
+  <div class="print-options-modal" *ngIf="showPrintOptions">
+    <div class="print-options-content">
+      <h4><i class="bi bi-printer"></i> Print Options</h4>
+      <p>Select how you want to print the receipt</p>
+      <div class="print-options-grid">
+        <div class="print-option" (click)="processCheckout('thermal')"><i class="bi bi-receipt"></i><h5>Thermal Receipt</h5><small>Small 80mm receipt</small></div>
+        <div class="print-option" (click)="processCheckout('a4')"><i class="bi bi-file-text"></i><h5>A4 Invoice</h5><small>Full size invoice</small></div>
+        <div class="print-option" (click)="processCheckout('none')"><i class="bi bi-check-circle"></i><h5>No Print</h5><small>Complete without printing</small></div>
+      </div>
+      <button class="btn btn-outline-secondary w-100 mt-3" (click)="cancelPrintOptions()">Cancel</button>
+    </div>
+  </div>
+
+  <div class="invoice-modal" *ngIf="showInvoice">
+    <div class="invoice-modal-content">
+      <app-invoice-thermal *ngIf="invoiceType === 'thermal'" [sale]="completedSale" [cart]="cart" [subtotal]="subtotal" [discountPercent]="discountPercent" [discountAmount]="discountAmount" [taxRate]="taxRate" [taxAmount]="taxAmount" [total]="total" [paidAmount]="completedSale?.paidAmount || 0" [change]="0" [paymentMethod]="paymentMethod" [customerName]="getCustomerName()" (close)="closeInvoice()"></app-invoice-thermal>
+      <app-invoice-a4 *ngIf="invoiceType === 'a4'" [sale]="completedSale" [cart]="cart" [subtotal]="subtotal" [discountPercent]="discountPercent" [discountAmount]="discountAmount" [taxRate]="taxRate" [taxAmount]="taxAmount" [total]="total" [paidAmount]="completedSale?.paidAmount || 0" [change]="0" [paymentMethod]="paymentMethod" [customerName]="getCustomerName()" (close)="closeInvoice()"></app-invoice-a4>
+    </div>
+  </div>
+</div>

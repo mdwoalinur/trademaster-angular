@@ -1,0 +1,77 @@
+<div class="reconciliation-page">
+  <div class="page-header">
+    <div>
+      <h2>Bank Reconciliation</h2>
+      <p>Match imported statement rows with posted payments, then reconcile safely.</p>
+    </div>
+    <div class="toolbar">
+      <select class="form-select" [(ngModel)]="selectedAccountId" (change)="load()">
+        <option [ngValue]="null">All accounts</option>
+        <option *ngFor="let account of accounts" [ngValue]="account.accountId">
+          {{ account.accountCode }} - {{ account.accountName }}
+        </option>
+      </select>
+      <select class="form-select" [(ngModel)]="status" (change)="load()">
+        <option value="">All Status</option>
+        <option value="UNMATCHED">Unmatched</option>
+        <option value="SUGGESTED">Suggested</option>
+        <option value="MATCHED">Matched</option>
+        <option value="RECONCILED">Reconciled</option>
+        <option value="MISMATCH">Mismatch</option>
+      </select>
+      <label class="btn btn-success" [class.disabled]="importing">
+        <i class="bi bi-upload"></i> {{ importing ? 'Importing...' : 'Import CSV' }}
+        <input type="file" hidden accept=".csv,text/csv" (change)="importFile($event)" [disabled]="importing">
+      </label>
+    </div>
+  </div>
+
+  <div class="summary-grid">
+    <article><span>Total Entries</span><strong>{{ summary.total || 0 }}</strong></article>
+    <article><span>Unmatched</span><strong>{{ summary.unmatched || 0 }}</strong></article>
+    <article><span>Suggested</span><strong>{{ summary.suggested || 0 }}</strong></article>
+    <article><span>Reconciled</span><strong>{{ summary.reconciled || 0 }}</strong></article>
+  </div>
+
+  <div class="panel">
+    <div *ngIf="loading" class="text-center py-5">
+      <div class="spinner-border text-success"></div>
+    </div>
+
+    <div *ngIf="!loading" class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="theme-table-header">
+          <tr>
+            <th>Date</th>
+            <th>Description</th>
+            <th>Reference</th>
+            <th class="text-end">Debit</th>
+            <th class="text-end">Credit</th>
+            <th>Status</th>
+            <th>Matched Payment</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let entry of entries">
+            <td>{{ formatDate(entry.transactionDate) }}</td>
+            <td class="description-cell">{{ entry.description || '-' }}</td>
+            <td>{{ entry.statementReference || '-' }}</td>
+            <td class="text-end">{{ formatCurrency(entry.debitAmount) }}</td>
+            <td class="text-end">{{ formatCurrency(entry.creditAmount) }}</td>
+            <td><span class="badge bg-secondary">{{ entry.status }}</span></td>
+            <td>{{ entry.matchedPaymentId || '-' }}</td>
+            <td class="text-end">
+              <button type="button" class="btn btn-sm btn-outline-primary me-1" (click)="match(entry)">Match</button>
+              <button type="button" class="btn btn-sm btn-outline-success me-1" [disabled]="!entry.matchedPaymentId" (click)="reconcile(entry)">Reconcile</button>
+              <button type="button" class="btn btn-sm btn-outline-danger" [disabled]="!entry.matchedPaymentId" (click)="unmatch(entry)">Unmatch</button>
+            </td>
+          </tr>
+          <tr *ngIf="entries.length === 0">
+            <td colspan="8" class="text-center text-muted py-4">No statement entries found.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

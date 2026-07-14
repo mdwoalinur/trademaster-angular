@@ -1,0 +1,64 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Product Variations</h2>
+    <button class="btn btn-primary" (click)="addVariation()">+ Add Variation</button>
+  </div>
+
+  <div class="row mb-3">
+    <div class="col-md-4">
+      <input type="text" class="form-control" placeholder="Search by SKU or name..." [(ngModel)]="searchTerm">
+    </div>
+    <div class="col-md-3">
+      <select class="form-select" [(ngModel)]="filterStatus">
+        <option *ngFor="let opt of statusOptions" [value]="opt">{{ opt }}</option>
+      </select>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="text-center">Loading...</div>
+  <div *ngIf="!loading && filteredVariations.length === 0" class="alert alert-info">No variations found.</div>
+
+  <div class="row" *ngIf="!loading">
+    <div class="col-md-6 col-lg-4 mb-3" *ngFor="let v of filteredVariations">
+      <div class="card h-100 shadow-sm variant-card">
+        <div class="variant-image-banner">
+          <img *ngIf="getVariationImageUrl(v)" [src]="getVariationImageUrl(v)" (error)="onVariationImageError($event)" alt="{{ v.variationName || v.sku }}">
+          <div class="variant-image-placeholder">
+            <i class="bi bi-layers"></i>
+            <span>Variant</span>
+          </div>
+          <span class="variant-status-dot" [class.active]="v.status"></span>
+          <span class="variant-sku-pill">{{ v.sku }}</span>
+        </div>
+
+        <div class="card-body variant-card-body">
+          <div class="variant-product-chip">
+            <i class="bi bi-box-seam"></i>
+            <span>{{ getProductName(v.productId) }}</span>
+          </div>
+
+          <h5 class="variant-title">{{ v.variationName || 'Unnamed variation' }}</h5>
+
+          <div class="variant-price-row">
+            <div>
+              <span>Buying</span>
+              <strong>{{ formatCurrency(v.buyingPrice) }}</strong>
+            </div>
+            <div>
+              <span>Additional</span>
+              <strong>{{ formatCurrency(v.additionalPrice) }}</strong>
+            </div>
+          </div>
+
+          <div class="variant-card-footer">
+            <span class="badge" [class]="getStatusClass(v.status)">{{ getStatusText(v.status) }}</span>
+            <div class="variant-actions">
+              <button class="btn btn-sm btn-warning" (click)="editVariation(v)">Edit</button>
+              <button class="btn btn-sm btn-danger" (click)="deleteVariation(v)">Delete</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

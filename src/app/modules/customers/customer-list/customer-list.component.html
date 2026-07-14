@@ -1,0 +1,63 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Customers</h2>
+    <button class="btn btn-primary" (click)="addCustomer()">+ Add Customer</button>
+  </div>
+
+  <div class="row mb-3">
+    <div class="col-md-4">
+      <input type="text" class="form-control" placeholder="Search by name, code, email, phone..." [(ngModel)]="searchTerm">
+    </div>
+    <div class="col-md-3">
+      <select class="form-select" [(ngModel)]="filterType">
+        <option *ngFor="let type of typeOptions" [value]="type">{{ type }}</option>
+      </select>
+    </div>
+    <div class="col-md-3">
+      <select class="form-select" [(ngModel)]="filterStatus">
+        <option *ngFor="let opt of statusOptions" [value]="opt">{{ opt }}</option>
+      </select>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="text-center">Loading...</div>
+  <div *ngIf="!loading && filteredCustomers.length === 0" class="alert alert-info">No customers found.</div>
+
+  <div class="row" *ngIf="!loading">
+    <div class="col-md-6 col-lg-4 mb-3" *ngFor="let customer of filteredCustomers">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <div class="customer-card-head">
+            <span class="badge bg-secondary">{{ customer.customerCode }}</span>
+            <span class="badge customer-type-badge">{{ getCustomerTypeLabel(customer.customerType) }}</span>
+          </div>
+          <div class="customer-card-profile">
+            <app-customer-mini
+              [photoUrl]="customer.photoUrl"
+              [customerName]="customer.customerName"
+              [customerCode]="customer.customerCode"
+              [email]="customer.email">
+            </app-customer-mini>
+          </div>
+          <p class="card-text mt-3">
+            <strong>Email:</strong> {{ customer.email || '-' }}<br>
+            <strong>Phone:</strong> {{ customer.phone || '-' }}<br>
+            <strong>Mobile:</strong> {{ customer.mobile || '-' }}<br>
+            <strong>GST:</strong> {{ customer.gstNumber || '-' }}<br>
+            <strong>Credit Limit:</strong> {{ customer.creditLimit | currency }}<br>
+            <strong>Opening Balance:</strong> {{ customer.openingBalance | currency }}<br>
+            <strong>Current Balance:</strong> {{ customer.currentBalance | currency }}<br>
+            <strong>Address:</strong> {{ customer.address }}, {{ customer.city }}, {{ customer.state }} - {{ customer.postalCode }}, {{ customer.country }}<br>
+            <span class="badge" [class]="getStatusClass(customer.status)">
+              {{ getStatusText(customer.status) }}
+            </span>
+          </p>
+          <div class="mt-2">
+            <button class="btn btn-sm btn-warning me-2" (click)="editCustomer(customer)">Edit</button>
+            <button class="btn btn-sm btn-danger" (click)="deleteCustomer(customer)">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

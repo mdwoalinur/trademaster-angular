@@ -1,0 +1,45 @@
+<div class="container mt-4">
+  <div class="card shadow">
+    <div class="card-header bg-primary text-white">
+      <h3 class="mb-0">{{ isEdit ? 'Edit Role' : 'Add New Role' }}</h3>
+    </div>
+    <div class="card-body">
+      <div *ngIf="loading" class="text-center py-5">
+        <div class="spinner-border text-primary"></div>
+        <p class="mt-2">Loading...</p>
+      </div>
+
+      <form [formGroup]="roleForm" (ngSubmit)="onSubmit()" *ngIf="!loading">
+        <div class="mb-3">
+          <label class="form-label">Role Name *</label>
+          <input type="text" class="form-control" formControlName="roleName">
+          <div class="invalid-feedback" *ngIf="roleForm.get('roleName')?.invalid && roleForm.get('roleName')?.touched">
+            Role name is required (minimum 3 characters)
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Description</label>
+          <textarea class="form-control" formControlName="description" rows="3" placeholder="What does this role do?"></textarea>
+        </div>
+
+        <div class="mb-3" *ngIf="isEdit">
+          <label class="form-label">Status</label>
+          <select class="form-select" formControlName="status">
+            <option [value]="true">Active</option>
+            <option [value]="false">Inactive</option>
+          </select>
+        </div>
+
+        <div class="mt-4 d-flex justify-content-between">
+          <button type="button" class="btn btn-secondary" (click)="cancel()">
+            <i class="bi bi-x-circle"></i> Cancel
+          </button>
+          <button type="submit" class="btn btn-primary" [disabled]="roleForm.invalid">
+            <i class="bi bi-check-circle"></i> {{ isEdit ? 'Update Role' : 'Create Role' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

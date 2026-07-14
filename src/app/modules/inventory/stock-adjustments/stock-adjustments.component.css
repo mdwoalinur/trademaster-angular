@@ -1,0 +1,15 @@
+:host {
+  display: block;
+  color: var(--tm-text);
+}
+
+.card,
+.table-responsive {
+  background: var(--tm-surface);
+  border-color: var(--tm-border);
+  box-shadow: var(--tm-shadow);
+}
+
+.card-header {
+  border-color: var(--tm-border) !important;
+}

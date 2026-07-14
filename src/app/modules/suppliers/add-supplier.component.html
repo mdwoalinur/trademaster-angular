@@ -1,0 +1,194 @@
+<div class="container mt-4">
+  <div class="card shadow">
+    <div class="card-header bg-primary text-white">
+      <h3>{{ isEdit ? 'Edit Supplier' : 'Add New Supplier' }}</h3>
+    </div>
+    <div class="card-body">
+      <form (ngSubmit)="save()">
+        <div class="supplier-form-layout">
+          <div class="supplier-main-fields">
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Supplier Code *</label>
+            <input type="text" class="form-control" [(ngModel)]="supplier.supplierCode" name="code" required>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Supplier Name *</label>
+            <input type="text" class="form-control" [(ngModel)]="supplier.supplierName" name="name" required>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Contact Person</label>
+            <input type="text" class="form-control" [(ngModel)]="supplier.contactPerson" name="contact">
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Phone</label>
+            <input type="text" class="form-control" [(ngModel)]="supplier.phone" name="phone">
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-control" [(ngModel)]="supplier.email" name="email">
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">GST Number</label>
+            <input type="text" class="form-control" [(ngModel)]="supplier.gstNumber" name="gst">
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Address</label>
+          <textarea class="form-control" rows="2" [(ngModel)]="supplier.address" name="address"></textarea>
+        </div>
+
+        <div class="row">
+          <div class="col-md-3 mb-3">
+            <label class="form-label">City</label>
+            <input type="text" class="form-control" [(ngModel)]="supplier.city" name="city">
+          </div>
+          <div class="col-md-3 mb-3">
+            <label class="form-label">State</label>
+            <input type="text" class="form-control" [(ngModel)]="supplier.state" name="state">
+          </div>
+          <div class="col-md-3 mb-3">
+            <label class="form-label">Postal Code</label>
+            <input type="text" class="form-control" [(ngModel)]="supplier.postalCode" name="postal">
+          </div>
+          <div class="col-md-3 mb-3">
+            <label class="form-label">Country</label>
+            <input type="text" class="form-control" [(ngModel)]="supplier.country" name="country">
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Payment Terms</label>
+            <input type="text" class="form-control" [(ngModel)]="supplier.paymentTerms" name="terms">
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Status</label>
+            <select class="form-select" [(ngModel)]="supplier.status" name="status">
+              <option [value]="true">Active</option>
+              <option [value]="false">Inactive</option>
+            </select>
+          </div>
+        </div>
+          </div>
+
+          <aside class="supplier-logo-panel">
+            <div class="supplier-logo-title">Supplier Logo / Photo</div>
+            <div
+              class="supplier-upload-box"
+              (drop)="onPhotoDrop($event)"
+              (dragover)="onPhotoDragOver($event)">
+              <i class="bi bi-building-up"></i>
+              <strong>Drag & drop supplier logo/photo here</strong>
+              <span>JPG, PNG, WEBP up to 5MB</span>
+              <label class="btn btn-outline-success btn-sm mt-2">
+                Choose Logo
+                <input type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" hidden (change)="onPhotoSelected($event)">
+              </label>
+            </div>
+            <div class="text-danger small mt-2" *ngIf="photoError">{{ photoError }}</div>
+
+            <div class="supplier-preview-card">
+              <div class="supplier-logo-preview" *ngIf="previewPhotoUrl; else supplierInitialsPreview">
+                <img class="supplier-logo-preview-img" [src]="previewPhotoUrl" alt="Supplier logo preview">
+              </div>
+              <ng-template #supplierInitialsPreview>
+                <div class="supplier-logo-preview supplier-initials">
+                  <i class="bi bi-building"></i>
+                  <span>{{ getSupplierInitials() }}</span>
+                </div>
+              </ng-template>
+              <div class="supplier-preview-name">{{ supplier.supplierName || 'Supplier preview' }}</div>
+              <div class="supplier-preview-code">{{ supplier.supplierCode || 'No code yet' }}</div>
+              <button type="button" class="btn btn-link text-danger btn-sm" (click)="removePhoto()" *ngIf="previewPhotoUrl">
+                Remove logo/photo
+              </button>
+            </div>
+          </aside>
+        </div>
+
+        <div class="mt-3">
+          <button type="submit" class="btn btn-primary" [disabled]="loading">
+            {{ loading ? 'Saving...' : (isEdit ? 'Update' : 'Save') }}
+          </button>
+          <button type="button" class="btn btn-secondary ms-2" (click)="cancel()">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="supplier-crop-backdrop" *ngIf="cropModalOpen">
+  <div class="supplier-crop-modal" (click)="$event.stopPropagation()">
+    <div class="supplier-crop-header">
+      <div>
+        <h4>Adjust Supplier Logo</h4>
+        <p>Resize and position the supplier logo/photo before saving.</p>
+      </div>
+      <button type="button" class="btn-close" aria-label="Close" (click)="cancelCrop()"></button>
+    </div>
+
+    <div class="supplier-crop-body">
+      <div class="supplier-crop-editor">
+        <div class="supplier-crop-stage">
+          <img
+            #supplierCropperImage
+            [src]="cropImageUrl"
+            (load)="onSupplierCropperImageLoad()"
+            alt="Adjust supplier logo">
+        </div>
+      </div>
+
+      <div class="supplier-crop-side">
+        <div>
+          <span class="supplier-crop-side-title">Supplier Logo Preview</span>
+          <small>Rounded rectangle company logo</small>
+        </div>
+
+        <div class="supplier-crop-live-preview supplier-crop-preview-window"></div>
+
+        <div class="supplier-crop-controls">
+          <label class="form-label" for="supplierCropZoom">Zoom</label>
+          <input
+            id="supplierCropZoom"
+            type="range"
+            class="form-range"
+            min="0.5"
+            max="3"
+            step="0.01"
+            [value]="cropZoom"
+            (input)="onCropZoomChange($event)">
+
+          <div class="supplier-crop-button-row">
+            <button type="button" class="btn btn-outline-secondary btn-sm" (click)="rotateCrop(-90)">
+              <i class="bi bi-arrow-counterclockwise"></i> Rotate Left
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" (click)="rotateCrop(90)">
+              <i class="bi bi-arrow-clockwise"></i> Rotate Right
+            </button>
+            <button type="button" class="btn btn-outline-success btn-sm" (click)="resetCrop()">
+              <i class="bi bi-arrow-repeat"></i> Reset
+            </button>
+          </div>
+        </div>
+
+        <div class="supplier-crop-help">
+          <i class="bi bi-info-circle"></i>
+          <span>Resize and position the supplier logo/photo before saving.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="supplier-crop-footer">
+      <button type="button" class="btn btn-light" (click)="cancelCrop()">Cancel</button>
+      <button type="button" class="btn btn-success" (click)="applyCroppedLogo()">Apply Logo</button>
+    </div>
+  </div>
+</div>

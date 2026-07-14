@@ -1,0 +1,45 @@
+<div class="container mt-4">
+  <div class="card shadow">
+    <div class="card-header bg-primary text-white">
+      <h3>{{ isEdit ? 'Edit Category' : 'Add New Category' }}</h3>
+    </div>
+    <div class="card-body">
+      <form (ngSubmit)="save()">
+        <div class="mb-3">
+          <label class="form-label">Category Name *</label>
+          <input type="text" class="form-control" [(ngModel)]="category.categoryName" name="name" required>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Parent Category (optional)</label>
+          <select class="form-select" [(ngModel)]="category.parentCategoryId" name="parentId">
+            <option [value]="null">None (Root Category)</option>
+            <option *ngFor="let cat of allCategories" [value]="cat.categoryId" [disabled]="cat.categoryId === category.categoryId">
+              {{ cat.categoryName }}
+            </option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Description</label>
+          <textarea class="form-control" rows="3" [(ngModel)]="category.description" name="description"></textarea>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Status</label>
+          <select class="form-select" [(ngModel)]="category.status" name="status">
+            <option [value]="true">Active</option>
+            <option [value]="false">Inactive</option>
+          </select>
+        </div>
+
+        <div class="mt-3">
+          <button type="submit" class="btn btn-primary" [disabled]="loading">
+            {{ loading ? 'Saving...' : (isEdit ? 'Update' : 'Save') }}
+          </button>
+          <button type="button" class="btn btn-secondary ms-2" (click)="cancel()">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

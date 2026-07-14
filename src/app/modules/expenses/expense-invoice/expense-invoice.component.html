@@ -1,0 +1,150 @@
+
+
+<!-- Main container for the expense voucher -->
+<div class="expense-invoice-container" id="expense-invoice">
+  <!-- ==================== Header Section ==================== -->
+  <div class="invoice-header">
+    <div class="company-info">
+      <h1 class="company-name">TRADEMASTER</h1>
+      <p class="company-tagline">Smart Inventory, Better Decision</p>
+      <p class="company-details">
+        123 Business Avenue, Dhaka, Bangladesh<br />
+        Phone: +880 1234-567890 | Email: info@trademaster.com
+      </p>
+    </div>
+    <div class="invoice-title">
+      <h2>EXPENSE VOUCHER</h2>
+      <!-- Display current expense status (e.g., DRAFT, APPROVED) -->
+      <div class="invoice-badge">{{ expense?.status || 'DRAFT' }}</div>
+    </div>
+  </div>
+
+  <!-- ==================== Voucher Details ==================== -->
+  <div class="invoice-details">
+    <div class="row">
+      <div class="col-6">
+        <table class="details-table" aria-label="Voucher basic information">
+          <tr>
+            <td class="label">Voucher No:</td>
+            <td class="value"><strong>{{ expense?.expenseNo }}</strong></td>
+          </tr>
+          <tr>
+            <td class="label">Expense Date:</td>
+            <td class="value">{{ formatDate(expense?.expenseDate) }}</td>
+          </tr>
+          <tr>
+            <td class="label">Payment Method:</td>
+            <td class="value">{{ expense?.paymentMethod }}</td>
+          </tr>
+        </table>
+      </div>
+      <div class="col-6">
+        <table class="details-table" aria-label="Vendor and payment details">
+          <tr>
+            <td class="label">Vendor:</td>
+            <td class="value">{{ vendorName || '—' }}</td>
+          </tr>
+          <tr>
+            <td class="label">Payment Status:</td>
+            <td class="value">{{ expense?.paymentStatus }}</td>
+          </tr>
+          <tr *ngIf="expense?.referenceNo">
+            <td class="label">Reference No:</td>
+            <td class="value">{{ expense?.referenceNo }}</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== Line Items Table ==================== -->
+  <table class="items-table" aria-describedby="Expense line items">
+    <thead>
+      <tr>
+        <th scope="col" style="width: 5%">#</th>
+        <th scope="col" style="width: 30%">Description</th>
+        <th scope="col" style="width: 15%">Category</th>
+        <th scope="col" style="width: 10%">Qty</th>
+        <th scope="col" style="width: 12%">Unit Price</th>
+        <th scope="col" style="width: 8%">Disc%</th>
+        <th scope="col" style="width: 8%">Tax%</th>
+        <th scope="col" style="width: 12%">Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let item of items; let i = index">
+        <td class="text-center">{{ i + 1 }}</td>
+        <td>
+          {{ item.itemName }}
+          <!-- Optional description displayed in smaller text -->
+          <div class="small text-muted" *ngIf="item.description">{{ item.description }}</div>
+        </td>
+        <!-- Category name fetched via map -->
+        <td>{{ getCategoryName(item.expCategoryId) }}</td>
+        <td class="text-center">{{ item.quantity }}</td>
+        <td class="text-right">{{ item.unitPrice | currency }}</td>
+        <td class="text-center">{{ item.discountPercent || '0' }}%</td>
+        <td class="text-center">{{ item.taxRate || '0' }}%</td>
+        <td class="text-right">{{ item.totalPrice | currency }}</td>
+      </tr>
+      <!-- Empty state when no items present -->
+      <tr *ngIf="items.length === 0">
+        <td colspan="8" class="text-center py-3 text-muted">No items found.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ==================== Totals Section ==================== -->
+  <div class="totals-section">
+    <div class="row">
+      <div class="col-7">
+        <!-- Display notes if available -->
+        <div class="notes" *ngIf="expense?.notes">
+          <p class="notes-label">Notes:</p>
+          <p>{{ expense?.notes }}</p>
+        </div>
+      </div>
+      <div class="col-5">
+        <table class="totals-table" aria-label="Expense summary">
+          <tr>
+            <td>Subtotal:</td>
+            <td class="text-right">{{ expense?.totalAmount | currency }}</td>
+          </tr>
+          <tr *ngIf="expense?.discountAmount">
+            <td>Discount:</td>
+            <td class="text-right text-danger">-{{ expense?.discountAmount | currency }}</td>
+          </tr>
+          <tr *ngIf="expense?.taxAmount">
+            <td>Tax:</td>
+            <td class="text-right">{{ expense?.taxAmount | currency }}</td>
+          </tr>
+          <tr class="grand-total-row">
+            <td><strong>Grand Total:</strong></td>
+            <td class="text-right"><strong>{{ expense?.grandTotal | currency }}</strong></td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== Footer ==================== -->
+  <div class="invoice-footer">
+    <div class="authorized-signature">
+      <p class="signature-line">Authorized By</p>
+      <p>_________________________</p>
+    </div>
+    <div class="thank-you">
+      <p class="generated-note">This is a computer generated voucher.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== Print Actions (Hidden during printing) ==================== -->
+<div class="print-actions no-print">
+  <button class="btn btn-primary" (click)="print()">
+    <i class="bi bi-printer" aria-hidden="true"></i> Print Voucher
+  </button>
+  <button class="btn btn-outline-secondary" (click)="onClose()">
+    <i class="bi bi-x-circle" aria-hidden="true"></i> Close
+  </button>
+</div>

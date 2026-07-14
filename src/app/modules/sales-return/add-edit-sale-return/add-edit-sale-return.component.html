@@ -1,0 +1,105 @@
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h3>Create Sales Return</h3>
+            <p class="mb-0">Sale ID: {{ saleId }} | Customer: {{ sale?.customerName || 'Walk‑in' }}</p>
+        </div>
+        <div class="card-body">
+            <!-- Loading spinner -->
+            <div *ngIf="loading" class="text-center py-5">
+                <div class="spinner-border text-primary"></div>
+                <p>Loading sale information...</p>
+            </div>
+
+            <!-- Main form -->
+            <form [formGroup]="returnForm" (ngSubmit)="onSubmit()" *ngIf="!loading">
+
+                <!-- Basic information -->
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Return Type *</label>
+                        <select class="form-select" formControlName="returnType">
+                            <option *ngFor="let type of returnTypes" [value]="type">{{ type }}</option>
+                        </select>
+                    </div>
+                    <div class="col-md-8">
+                        <label class="form-label fw-bold">Reason for Return</label>
+                        <input type="text" class="form-control" formControlName="reason" placeholder="e.g., Defective, Wrong item, etc.">
+                    </div>
+                </div>
+
+                <!-- Items table -->
+                <h5 class="mt-4">Returned Items</h5>
+                <hr>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead class="theme-table-header">
+                            <tr>
+                                <th>Product</th>
+                                <th>Original Qty</th>
+                                <th>Return Qty</th>
+                                <th>Unit Price</th>
+                                <th>Condition</th>
+                                <th>Action</th>
+                                <th>Refund Amount</th>
+                                <th>Reason</th>
+                            </tr>
+                        </thead>
+                        <tbody formArrayName="items">
+                            <tr *ngFor="let item of itemsArray.controls; let i = index" [formGroupName]="i">
+                                <td>
+                                    <input type="hidden" formControlName="productId">
+                                    <app-product-mini
+                                        [imageUrl]="item.get('imageUrl')?.value"
+                                        [productName]="item.get('productName')?.value"
+                                        [sku]="item.get('sku')?.value">
+                                    </app-product-mini>
+                                </td>
+                                <td class="text-center">{{ item.get('originalQuantity')?.value }}</td>
+                                <td>
+                                    <input type="number" class="form-control form-control-sm" formControlName="returnedQuantity" min="0" step="1">
+                                </td>
+                                <td class="text-end">{{ item.get('unitPrice')?.value | currency }}</td>
+                                <td>
+                                    <select class="form-select form-select-sm" formControlName="itemCondition">
+                                        <option *ngFor="let cond of itemConditions" [value]="cond">{{ cond }}</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <select class="form-select form-select-sm" formControlName="actionTaken">
+                                        <option *ngFor="let act of actions" [value]="act">{{ act }}</option>
+                                    </select>
+                                </td>
+                                <td class="text-end fw-bold text-primary">
+                                    {{ item.get('refundAmount')?.value | currency }}
+                                </td>
+                                <td>
+                                    <input type="text" class="form-control form-control-sm" formControlName="reason" placeholder="Optional">
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="alert alert-info mt-3">
+                    <strong>Total Refund Amount:</strong> {{ totalRefundAmount | currency }}
+                </div>
+
+                <!-- Additional notes -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Notes</label>
+                    <textarea class="form-control" formControlName="notes" rows="2" placeholder="Any extra details..."></textarea>
+                </div>
+
+                <!-- Action buttons -->
+                <div class="mt-4 d-flex justify-content-between">
+                    <button type="button" class="btn btn-secondary" (click)="cancel()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" [disabled]="submitting">
+                        <span *ngIf="submitting" class="spinner-border spinner-border-sm me-2"></span>
+                        {{ submitting ? 'Submitting...' : 'Create Return Request' }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

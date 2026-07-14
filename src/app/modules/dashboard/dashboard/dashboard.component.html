@@ -1,0 +1,205 @@
+<div class="erp-dashboard">
+  <div class="dashboard-toolbar">
+    <div>
+      <h1>{{ 'DASHBOARD.TITLE' | translate }}</h1>
+      <p>{{ 'DASHBOARD.SUBTITLE' | translate }}</p>
+    </div>
+    <button class="refresh-btn" type="button" (click)="loadDashboard()">
+      <i class="bi bi-arrow-repeat"></i>
+      {{ 'COMMON.REFRESH' | translate }}
+    </button>
+  </div>
+
+  <div class="error-strip" *ngIf="errors.length">
+    <i class="bi bi-info-circle"></i>
+    <span>{{ errors[0] }}</span>
+  </div>
+
+  <section class="kpi-grid">
+    <article class="kpi-card" *ngFor="let kpi of kpis(); trackBy: trackByIndex" [ngClass]="kpi.className">
+      <div class="kpi-icon"><i class="bi" [ngClass]="kpi.icon"></i></div>
+      <div class="kpi-content">
+        <span>{{ kpi.title }}</span>
+        <strong *ngIf="!panelLoading['summary']">{{ kpi.currency ? (kpi.value | currency:'BDT':'symbol':'1.0-0') : (kpi.value | number) }}</strong>
+        <div class="skeleton skeleton-value" *ngIf="panelLoading['summary']"></div>
+        <small [class.up]="(kpi.trend || 0) > 0" [class.down]="(kpi.trend || 0) < 0">
+          <i class="bi" [ngClass]="(kpi.trend || 0) >= 0 ? 'bi-arrow-up' : 'bi-arrow-down'"></i>
+          {{ formatTrend(kpi.trend) }}
+        </small>
+      </div>
+    </article>
+  </section>
+
+  <section class="dashboard-grid analytics-row">
+    <article class="panel panel-wide">
+      <div class="panel-header">
+        <div>
+          <h2>Sales Analytics <i class="bi bi-info-circle"></i></h2>
+        </div>
+        <div class="period-tabs">
+          <button type="button" [class.active]="selectedSalesPeriod==='hourly'" (click)="loadSalesAnalytics('hourly')">Hourly</button>
+          <button type="button" [class.active]="selectedSalesPeriod==='daily'" (click)="loadSalesAnalytics('daily')">Daily</button>
+          <button type="button" [class.active]="selectedSalesPeriod==='weekly'" (click)="loadSalesAnalytics('weekly')">Weekly</button>
+          <button type="button" [class.active]="selectedSalesPeriod==='monthly'" (click)="loadSalesAnalytics('monthly')">Monthly</button>
+        </div>
+      </div>
+      <div class="chart-wrap"><canvas id="salesAnalyticsChart"></canvas></div>
+      <div class="metric-footer">
+        <div>
+          <span>Total Sales</span>
+          <strong>{{ salesAnalytics.totalSales | currency:'BDT':'symbol':'1.0-0' }}</strong>
+          <small [class.up]="salesAnalytics.salesTrend >= 0" [class.down]="salesAnalytics.salesTrend < 0">{{ formatTrend(salesAnalytics.salesTrend) }}</small>
+        </div>
+        <div>
+          <span>Total Purchases</span>
+          <strong class="green-text">{{ salesAnalytics.totalPurchases | currency:'BDT':'symbol':'1.0-0' }}</strong>
+          <small [class.up]="salesAnalytics.purchaseTrend >= 0" [class.down]="salesAnalytics.purchaseTrend < 0">{{ formatTrend(salesAnalytics.purchaseTrend) }}</small>
+        </div>
+      </div>
+    </article>
+
+    <article class="panel panel-wide">
+      <div class="panel-header">
+        <h2>Stock Movement (In vs Out) <i class="bi bi-info-circle"></i></h2>
+        <span class="chip">Monthly</span>
+      </div>
+      <div class="chart-wrap"><canvas id="stockMovementChart"></canvas></div>
+      <div class="metric-footer">
+        <div><span>Total Stock In</span><strong>{{ stockMovement.totalStockIn | number }}</strong></div>
+        <div><span>Total Stock Out</span><strong class="red-text">{{ stockMovement.totalStockOut | number }}</strong></div>
+      </div>
+    </article>
+
+    <article class="panel warehouse-panel">
+      <div class="panel-header">
+        <h2>Warehouse-wise Stock Value <i class="bi bi-info-circle"></i></h2>
+      </div>
+      <div class="warehouse-layout">
+        <div class="donut-wrap">
+          <canvas id="warehouseStockChart"></canvas>
+          <div class="donut-center">
+            <span>Total</span>
+            <strong>{{ totalWarehouseValue() | currency:'BDT':'symbol':'1.0-0' }}</strong>
+          </div>
+        </div>
+        <div class="legend-list">
+          <div *ngFor="let item of warehouseStockValue; let i = index" class="legend-row">
+            <span class="legend-dot dot-{{ i }}"></span>
+            <span>{{ item.warehouseName }}</span>
+            <strong>{{ item.stockValue | currency:'BDT':'symbol':'1.0-0' }} ({{ item.percentage | number:'1.0-1' }}%)</strong>
+          </div>
+          <div class="empty-state" *ngIf="warehouseStockValue.length === 0">No warehouse stock value</div>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <section class="dashboard-grid middle-row">
+    <article class="panel profit-panel">
+      <div class="panel-header"><h2>Profit Overview <i class="bi bi-info-circle"></i></h2></div>
+      <div class="profit-summary">
+        <span>Total Profit (This Month)</span>
+        <strong>{{ profitOverview.totalProfit | currency:'BDT':'symbol':'1.0-0' }}</strong>
+        <small [class.up]="profitOverview.profitTrend >= 0" [class.down]="profitOverview.profitTrend < 0">{{ formatTrend(profitOverview.profitTrend) }}</small>
+      </div>
+      <div class="mini-chart"><canvas id="profitOverviewChart"></canvas></div>
+      <div class="profit-stats">
+        <div><span>Gross Profit</span><strong>{{ profitOverview.grossProfit | currency:'BDT':'symbol':'1.0-0' }}</strong></div>
+        <div><span>Net Profit Margin</span><strong>{{ profitOverview.netProfitMargin | number:'1.0-2' }}%</strong></div>
+        <div><span>Avg. Order Value</span><strong>{{ profitOverview.averageOrderValue | currency:'BDT':'symbol':'1.0-0' }}</strong></div>
+      </div>
+    </article>
+
+    <article class="panel">
+      <div class="panel-header"><h2>Top Customers <i class="bi bi-info-circle"></i></h2><a routerLink="/customers">View all</a></div>
+      <div class="compact-table">
+        <div class="table-head"><span>#</span><span>Customer</span><span>Total Sales</span><span>Trend</span></div>
+        <div class="table-row" *ngFor="let customer of topCustomers; let i = index">
+          <span>{{ i + 1 }}</span><app-customer-mini [photoUrl]="customer.photoUrl" [customerName]="customer.customerName || 'N/A'" [customerCode]="customer.customerCode" [compact]="true"></app-customer-mini><span>{{ customer.totalSales | currency:'BDT':'symbol':'1.0-0' }}</span><small [class.up]="customer.trend >= 0">{{ formatTrend(customer.trend) }}</small>
+        </div>
+        <div class="empty-state" *ngIf="topCustomers.length === 0">No customers found</div>
+      </div>
+    </article>
+
+    <article class="panel alert-panel">
+      <div class="panel-header"><h2>Low Stock Alerts <i class="bi bi-info-circle"></i></h2><a routerLink="/inventory/low-stock">View all</a></div>
+      <div class="alert-list">
+        <div *ngFor="let item of lowStockAlerts.slice(0,5)" class="alert-row">
+          <i class="bi bi-exclamation-triangle-fill"></i>
+          <div>
+            <app-product-mini
+              [imageUrl]="item.imageUrl"
+              [productName]="item.productName"
+              [meta]="item.warehouseName"
+              [compact]="true">
+            </app-product-mini>
+          </div>
+          <span>{{ item.currentQuantity }} / {{ item.reorderLevel }}</span>
+        </div>
+        <div class="empty-state" *ngIf="lowStockAlerts.length === 0">No low stock alerts</div>
+      </div>
+    </article>
+
+    <article class="panel">
+      <div class="panel-header"><h2>Out of Stock / Reorder Required <i class="bi bi-info-circle"></i></h2><a routerLink="/inventory/low-stock">View all</a></div>
+      <div class="out-list">
+        <div *ngFor="let item of outOfStockItems.slice(0,5)" class="out-row">
+          <app-product-mini
+            [imageUrl]="item.imageUrl"
+            [productName]="item.productName"
+            [compact]="true">
+          </app-product-mini>
+          <span [class.out]="item.status === 'Out of Stock'">{{ item.status }}</span>
+        </div>
+        <div class="empty-state" *ngIf="outOfStockItems.length === 0">No reorder items</div>
+      </div>
+    </article>
+  </section>
+
+  <section class="dashboard-grid table-row-grid">
+    <article class="panel table-panel">
+      <div class="panel-header"><h2>Recent Stock Movements <i class="bi bi-info-circle"></i></h2><a routerLink="/inventory/movements">View all</a></div>
+      <div class="table-responsive">
+        <table>
+          <thead><tr><th>Date</th><th>Product</th><th>Warehouse</th><th>Type</th><th>Qty</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let movement of recentStockMovements">
+              <td>{{ movement.date | date:'MMM d, y h:mm a' }}</td><td><app-product-mini [imageUrl]="movement.imageUrl" [productName]="movement.productName" [compact]="true"></app-product-mini></td><td>{{ movement.warehouseName }}</td><td><span class="badge in">{{ movement.type }}</span></td><td>{{ movement.quantity }}</td><td><span class="badge done">{{ movement.status }}</span></td>
+            </tr>
+            <tr *ngIf="recentStockMovements.length === 0"><td colspan="6" class="empty-cell">No recent movements</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </article>
+
+    <article class="panel table-panel">
+      <div class="panel-header"><h2>Top Selling Products <i class="bi bi-info-circle"></i></h2><a routerLink="/reports/sales">View all</a></div>
+      <div class="table-responsive">
+        <table>
+          <thead><tr><th>#</th><th>Product</th><th>Units Sold</th><th>Revenue</th><th>Trend</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let product of topSellingProducts; let i = index">
+              <td>{{ i + 1 }}</td><td><app-product-mini [imageUrl]="product.imageUrl" [productName]="product.productName" [compact]="true"></app-product-mini></td><td>{{ product.unitsSold | number }}</td><td>{{ product.revenue | currency:'BDT':'symbol':'1.0-0' }}</td><td><span class="trend-chip">{{ formatTrend(product.trend) }}</span></td>
+            </tr>
+            <tr *ngIf="topSellingProducts.length === 0"><td colspan="5" class="empty-cell">No sold products</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </article>
+
+    <article class="panel table-panel">
+      <div class="panel-header"><h2>Recent Purchase Orders <i class="bi bi-info-circle"></i></h2><a routerLink="/purchases">View all</a></div>
+      <div class="table-responsive">
+        <table>
+          <thead><tr><th>PO No.</th><th>Supplier</th><th>Date</th><th>Amount</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let po of recentPurchaseOrders">
+              <td>{{ po.poNo }}</td><td>{{ po.supplierName }}</td><td>{{ po.date | date:'MMM d, y' }}</td><td>{{ po.amount | currency:'BDT':'symbol':'1.0-0' }}</td><td><span class="badge" [class.pending]="po.status === 'PENDING'" [class.done]="po.status !== 'PENDING'">{{ po.status }}</span></td>
+            </tr>
+            <tr *ngIf="recentPurchaseOrders.length === 0"><td colspan="5" class="empty-cell">No purchase orders</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </article>
+  </section>
+</div>

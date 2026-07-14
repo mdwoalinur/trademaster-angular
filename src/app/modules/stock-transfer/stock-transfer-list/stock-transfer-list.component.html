@@ -1,0 +1,37 @@
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Stock Transfers</h2>
+        <button class="btn btn-primary" (click)="addTransfer()">
+            <i class="bi bi-plus-circle"></i> New Transfer
+        </button>
+    </div>
+
+    <div *ngIf="loading" class="text-center py-5"><div class="spinner-border text-primary"></div></div>
+
+    <div *ngIf="!loading" class="table-responsive">
+        <table class="table table-hover table-bordered">
+            <thead class="theme-table-header">
+                <tr>
+                    <th>Transfer #</th><th>From Warehouse</th><th>To Warehouse</th><th>Date</th><th>Status</th><th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let t of transfers">
+                    <td>{{ t.transferNo }}</td>
+                    <td>{{ t.fromWarehouseId }} (Warehouse)</td>
+                    <td>{{ t.toWarehouseId }} (Warehouse)</td>
+                    <td>{{ formatDate(t.transferDate?? '') }}</td>
+                    <td><span class="badge" [class]="getStatusBadge(t.status)">{{ t.status }}</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-info me-1" (click)="viewTransfer(t.transferId!)" title="View"><i class="bi bi-eye"></i></button>
+                        <button *ngIf="t.status === 'PENDING'" class="btn btn-sm btn-success me-1" (click)="approveTransfer(t.transferId!)" title="Approve"><i class="bi bi-check-lg"></i></button>
+                        <button *ngIf="t.status === 'PENDING'" class="btn btn-sm btn-warning me-1" (click)="rejectTransfer(t.transferId!)" title="Reject"><i class="bi bi-x-lg"></i></button>
+                        <button *ngIf="t.status === 'PENDING'" class="btn btn-sm btn-danger" (click)="cancelTransfer(t.transferId!)" title="Cancel"><i class="bi bi-trash"></i></button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- pagination -->
+</div>

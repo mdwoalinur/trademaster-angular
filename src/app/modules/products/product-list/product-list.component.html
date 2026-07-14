@@ -1,0 +1,116 @@
+<div class="product-list-container">
+  <!-- Header & Action Buttons -->
+  <div class="list-header">
+    <h2>Product Management</h2>
+    <div class="action-buttons">
+      <button class="btn-add" (click)="router.navigate(['/products/add'])">
+        + Add New Product
+      </button>
+      <button class="btn-print-labels" (click)="printBatchLabels()" [disabled]="selectedProducts.length === 0">
+        🖨️ Print Labels ({{ selectedProducts.length }})
+      </button>
+    </div>
+  </div>
+
+  <!-- Search & Filter Bar (unchanged) -->
+  <div class="filter-bar">
+    <div class="search-box">
+      <input type="text" placeholder="Search by name, code or SKU..." [(ngModel)]="searchTerm" class="search-input" />
+      <span class="search-icon">🔍</span>
+    </div>
+    <div class="filter-box">
+      <label>Status:</label>
+      <select [(ngModel)]="filterStatus" class="filter-select">
+        <option *ngFor="let opt of statusOptions" [value]="opt">{{ opt }}</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Loading Spinner -->
+  <div *ngIf="loading" class="loading-spinner">
+    <div class="spinner"></div>
+    <p>Loading products...</p>
+  </div>
+
+  <!-- Products Table -->
+  <div *ngIf="!loading" class="table-wrapper">
+    <table class="product-table">
+      <thead>
+        <tr>
+          <!--  Checkbox column for batch selection -->
+          <th style="width: 40px">
+            <input type="checkbox" (change)="toggleSelectAll($event)" [checked]="selectedProducts.length === filteredProducts.length && filteredProducts.length > 0">
+          </th>
+          <th>ID</th>
+          <th>Code</th>
+          <th>SKU</th>
+          <th>Selected Unit</th>
+          <th>Product Name</th>
+          <th>Buying Price</th>
+          <th>Selling Price</th>
+          <th>Stock Levels</th>
+          <th>Status</th>
+          <th>Actions</th>
+          <th>Barcode</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let product of filteredProducts">
+          <!-- Checkbox for each row -->
+          <td>
+            <input type="checkbox" 
+                   [checked]="isSelected(product.id!)" 
+                   (change)="toggleSelection(product.id!, $event)">
+          </td>
+          <td>{{ product.id }}</td>
+          <td><span class="code-badge">{{ product.productCode }}</span></td>
+          <td>{{ product.sku }}</td>
+          <td>{{ product.selectUnit }}</td>
+          <td class="product-name-cell">
+            <div class="product-info">
+              <img
+                class="product-thumb"
+                [src]="getProductImageUrl(product)"
+                (error)="onProductImageError($event)"
+                alt="{{ product.productName }}">
+              <div class="product-info-text">
+                <strong>{{ product.productName }}</strong>
+                <span class="desc-preview" *ngIf="product.description">
+                  {{ product.description | slice:0:60 }}...
+                </span>
+              </div>
+            </div>
+          </td>
+          <td>{{ product.buyingPrice | currency:'BDT':'symbol':'1.2-2' }}</td>
+          <td class="selling-price">{{ product.sellingPrice | currency:'BDT':'symbol':'1.2-2' }}</td>
+          <td class="stock-cell">
+            <span>Min: {{ product.minStockLevel }}</span>
+            <span>Max: {{ product.maxStockLevel }}</span>
+            <span class="reorder">Reorder: {{ product.reorderLevel }}</span>
+          </td>
+          <td><span class="status-badge" [class]="getStatusClass(product.status)">{{ product.status }}</span></td>
+          <td class="actions-cell">
+            <button class="btn-icon btn-edit" (click)="editProduct(product)" title="Edit">✏️</button>
+            <button class="btn-icon btn-delete" (click)="deleteProduct(product)" title="Delete">🗑️</button>
+          </td>
+          <td>
+            <button class="btn btn-sm btn-outline-info" (click)="showBarcode(product)">
+              <i class="bi bi-upc-scan"></i> Show
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="filteredProducts.length === 0">
+          <td colspan="12" class="empty-row">
+            <div class="empty-state">
+              <span class="empty-icon">📦</span>
+              <p>No products found</p>
+              <button class="btn-add-small" (click)="router.navigate(['/products/add'])">
+                Add your first product
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

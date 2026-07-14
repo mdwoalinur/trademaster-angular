@@ -1,0 +1,107 @@
+<div class="thermal-receipt" id="thermal-receipt">
+  <!-- Header -->
+  <div class="receipt-header">
+    <h2 class="company-name">TRADEMASTER</h2>
+    <p class="company-tagline">Smart Inventory System</p>
+    <p class="company-address">123 Business Avenue, Dhaka</p>
+    <p class="company-contact">Tel: +880 1234-567890</p>
+  </div>
+
+  <div class="divider">================================</div>
+
+  <!-- Invoice Info -->
+  <div class="invoice-info">
+    <div class="row-info">
+      <span>Invoice No:</span>
+      <strong>{{ sale?.invoiceNo }}</strong>
+    </div>
+    <div class="row-info">
+      <span>Date:</span>
+      <span>{{ sale?.saleDate | date:'dd/MM/yyyy hh:mm a' }}</span>
+    </div>
+    <div class="row-info">
+      <span>Customer:</span>
+      <span>{{ customerName || 'Walk-in Customer' }}</span>
+    </div>
+    <div class="row-info">
+      <span>Payment:</span>
+      <span>{{ paymentMethod }}</span>
+    </div>
+  </div>
+
+  <div class="divider">================================</div>
+
+  <!-- Items Table -->
+  <table class="items-table">
+    <thead>
+      <tr>
+        <th class="text-left">Item</th>
+        <th class="text-center">Qty</th>
+        <th class="text-right">Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let item of cart">
+        <td class="text-left">{{ item.productName }}</td>
+        <td class="text-center">{{ item.quantity }}</td>
+        <td class="text-right">{{ item.total | number:'1.2-2' }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="divider">================================</div>
+
+  <!-- Totals -->
+  <div class="totals">
+    <div class="row-info">
+      <span>Subtotal:</span>
+      <span>{{ subtotal | number:'1.2-2' }}</span>
+    </div>
+    <div class="row-info" *ngIf="discountAmount > 0">
+      <span>Discount ({{ discountPercent }}%):</span>
+      <span>-{{ discountAmount | number:'1.2-2' }}</span>
+    </div>
+    <div class="row-info" *ngIf="taxAmount > 0">
+      <span>Tax ({{ taxRate }}%):</span>
+      <span>{{ taxAmount | number:'1.2-2' }}</span>
+    </div>
+    <div class="row-info grand-total">
+      <strong>TOTAL:</strong>
+      <strong>{{ total | number:'1.2-2' }}</strong>
+    </div>
+  </div>
+
+  <div class="divider">================================</div>
+
+  <!-- Payment Info -->
+  <div class="payment-info">
+    <div class="row-info">
+      <span>Paid Amount:</span>
+      <span>{{ paidAmount | number:'1.2-2' }}</span>
+    </div>
+    <div class="row-info">
+      <span>Change:</span>
+      <span>{{ change | number:'1.2-2' }}</span>
+    </div>
+  </div>
+
+  <div class="divider">================================</div>
+
+  <!-- Footer -->
+  <div class="receipt-footer">
+    <p class="thank-you">*** Thank You! ***</p>
+    <p class="visit-again">Visit Again</p>
+    <p class="exchange-policy">Goods once sold cannot be returned</p>
+    <p class="software-credit">Powered by TradeMaster</p>
+  </div>
+</div>
+
+<!-- Print Actions -->
+<div class="print-actions no-print">
+  <button class="btn btn-primary btn-sm" (click)="printReceipt()">
+    <i class="bi bi-printer"></i> Print
+  </button>
+  <button class="btn btn-outline-secondary btn-sm" (click)="onClose()">
+    <i class="bi bi-x-circle"></i> Close
+  </button>
+</div>

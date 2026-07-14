@@ -1,0 +1,111 @@
+<div class="sale-items-page">
+  <div class="sale-items-header">
+    <div>
+      <h2>Sale Items</h2>
+      <p>Manage your sale items efficiently.</p>
+    </div>
+    <button class="btn btn-primary sale-item-add-btn" (click)="addSaleItem()">
+      <i class="bi bi-plus"></i> Add Sale Item
+    </button>
+  </div>
+
+  <div class="sale-item-summary" *ngIf="!loading">
+    <div><span>Total Sale Items</span><strong>{{ totalSaleItems }}</strong></div>
+    <div><span>Total Quantity</span><strong>{{ totalQuantity }}</strong></div>
+    <div><span>Total Value</span><strong>{{ formatCurrency(totalValue) }}</strong></div>
+  </div>
+
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary"></div>
+    <p class="mt-2">Loading sale items...</p>
+  </div>
+  <div *ngIf="!loading && filteredSaleItems.length === 0" class="alert alert-info">No sale items found.</div>
+
+  <div class="sale-items-table-card" *ngIf="!loading && filteredSaleItems.length">
+    <div class="sale-items-toolbar">
+      <div class="sale-item-search">
+        <input type="text" class="form-control" placeholder="Search by product or invoice..." [(ngModel)]="searchTerm">
+        <i class="bi bi-search"></i>
+      </div>
+      <select class="form-select" [(ngModel)]="filterInvoice">
+        <option value="ALL">All Invoices</option>
+        <option *ngFor="let sale of sales" [value]="sale.saleId">{{ sale.invoiceNo }}</option>
+      </select>
+      <select class="form-select" [(ngModel)]="filterTaxRate">
+        <option value="ALL">All Tax Rates</option>
+        <option *ngFor="let tax of taxRateOptions" [value]="tax">{{ tax }}%</option>
+      </select>
+      <button type="button" class="btn btn-outline-success"><i class="bi bi-funnel"></i> Filters</button>
+      <div class="view-toggle">
+        <button type="button" [class.active]="viewMode === 'grid'" (click)="viewMode = 'grid'" title="Grid view"><i class="bi bi-grid"></i></button>
+        <button type="button" [class.active]="viewMode === 'table'" (click)="viewMode = 'table'" title="Table view"><i class="bi bi-table"></i></button>
+      </div>
+    </div>
+
+    <div class="table-responsive sale-items-table-wrapper">
+      <table class="sale-items-data-table">
+        <colgroup>
+          <col class="col-index">
+          <col class="col-invoice">
+          <col class="col-product">
+          <col class="col-qty">
+          <col class="col-unit">
+          <col class="col-discount">
+          <col class="col-tax">
+          <col class="col-total">
+          <col class="col-actions">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Sale Invoice</th>
+            <th>Product</th>
+            <th>Qty</th>
+            <th>Unit Price</th>
+            <th>Discount</th>
+            <th>Tax Rate</th>
+            <th>Total Price</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of filteredSaleItems; let i = index">
+            <td>{{ i + 1 }}</td>
+            <td>
+              <div class="sale-invoice-cell" [title]="getSaleInvoiceNo(item.saleId)">
+                <span>{{ getSaleInvoiceNo(item.saleId) }}</span>
+                <small>{{ formatDate(getSale(item.saleId)?.saleDate) }}</small>
+              </div>
+            </td>
+            <td class="sale-product-cell" [title]="getProductName(item.productId) + (getProductSku(item.productId) ? ' | ' + getProductSku(item.productId) : '')">
+              <app-product-mini
+                [imageUrl]="getProductImageUrl(item.productId)"
+                [productName]="getProductName(item.productId)"
+                [sku]="getProductSku(item.productId)"
+                [compact]="true">
+              </app-product-mini>
+            </td>
+            <td><span class="qty-badge">{{ item.quantity }}</span></td>
+            <td class="money">{{ formatCurrency(item.unitPrice) }}</td>
+            <td>
+              <span class="discount-badge">{{ item.discountPercent || 0 }}%</span>
+              <small>{{ formatCurrency(item.discountAmount) }}</small>
+            </td>
+            <td><span class="tax-badge">{{ item.taxRate || 0 }}%</span></td>
+            <td class="money total">{{ formatCurrency(item.totalPrice) }}</td>
+            <td>
+              <div class="sale-item-actions">
+                <button class="item-action-btn edit" (click)="editSaleItem(item)" title="Edit"><i class="bi bi-pencil"></i></button>
+                <button class="item-action-btn delete" (click)="deleteSaleItem(item)" title="Delete"><i class="bi bi-trash"></i></button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="sale-items-footer">
+      Showing 1 to {{ filteredSaleItems.length }} of {{ filteredSaleItems.length }} items
+    </div>
+  </div>
+</div>

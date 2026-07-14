@@ -1,0 +1,61 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Suppliers</h2>
+    <button class="btn btn-primary" (click)="addSupplier()">+ Add Supplier</button>
+  </div>
+
+  <div class="row mb-3">
+    <div class="col-md-4">
+      <input type="text" class="form-control" placeholder="Search by name, code, contact, city..." [(ngModel)]="searchTerm">
+    </div>
+    <div class="col-md-3">
+      <select class="form-select" [(ngModel)]="filterStatus">
+        <option *ngFor="let opt of statusOptions" [value]="opt">{{ opt }}</option>
+      </select>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="text-center">Loading...</div>
+  <div *ngIf="!loading && filteredSuppliers.length === 0" class="alert alert-info">No suppliers found.</div>
+
+  <div class="row" *ngIf="!loading">
+    <div class="col-md-6 col-lg-4 mb-3" *ngFor="let supplier of filteredSuppliers">
+      <div class="card h-100 shadow-sm supplier-card">
+        <div class="card-body">
+          <div class="supplier-card-head">
+            <div class="supplier-logo-box" [class.logo-fallback-visible]="!getSupplierPhotoUrl(supplier.photoUrl)">
+              <img *ngIf="getSupplierPhotoUrl(supplier.photoUrl)" [src]="getSupplierPhotoUrl(supplier.photoUrl)" (error)="onSupplierImageError($event)" alt="Supplier logo">
+              <div class="supplier-logo-fallback">
+                <i class="bi bi-building"></i>
+                <span>{{ getSupplierInitials(supplier) }}</span>
+              </div>
+            </div>
+            <div class="supplier-head-copy">
+              <span class="supplier-code-badge">{{ supplier.supplierCode }}</span>
+              <h5 class="card-title">{{ supplier.supplierName }}</h5>
+              <small>{{ supplier.contactPerson || 'No contact person' }}</small>
+            </div>
+            <span class="badge supplier-status" [class.active]="supplier.status">{{ getStatusText(supplier.status) }}</span>
+          </div>
+
+          <div class="supplier-info-grid">
+            <div><span>Email</span><strong>{{ supplier.email || '-' }}</strong></div>
+            <div><span>Phone</span><strong>{{ supplier.phone || '-' }}</strong></div>
+            <div><span>GST</span><strong>{{ supplier.gstNumber || '-' }}</strong></div>
+            <div><span>Terms</span><strong>{{ supplier.paymentTerms || '-' }}</strong></div>
+          </div>
+
+          <div class="supplier-address">
+            <i class="bi bi-geo-alt"></i>
+            <span>{{ supplier.address || '-' }}, {{ supplier.city || '-' }}, {{ supplier.state || '-' }} - {{ supplier.postalCode || '-' }}, {{ supplier.country || '-' }}</span>
+          </div>
+
+          <div class="supplier-card-actions">
+            <button class="btn btn-sm btn-warning" (click)="editSupplier(supplier)">Edit</button>
+            <button class="btn btn-sm btn-danger" (click)="deleteSupplier(supplier)">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

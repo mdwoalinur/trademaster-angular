@@ -1,0 +1,156 @@
+<div class="settings-page">
+  <div class="settings-header">
+    <div>
+      <p class="eyebrow">{{ 'HEADER.SETTINGS' | translate }}</p>
+      <h2>{{ 'PROFILE.SETTINGS_CENTER' | translate }}</h2>
+    </div>
+    <a routerLink="/profile" class="btn btn-outline-primary">
+      <i class="bi bi-person-badge"></i>
+      {{ 'PROFILE.MY_PROFILE' | translate }}
+    </a>
+  </div>
+
+  <div class="settings-grid">
+    <section class="settings-card">
+      <div class="section-heading">
+        <h3>{{ 'PROFILE.ACCOUNT_SETTINGS' | translate }}</h3>
+        <span>{{ profile?.username || 'User' }}</span>
+      </div>
+      <div class="account-strip" *ngIf="!profileLoading">
+        <div><small>{{ 'PROFILE.FULL_NAME' | translate }}</small><strong>{{ profile?.fullName || 'N/A' }}</strong></div>
+        <div><small>{{ 'PROFILE.EMAIL' | translate }}</small><strong>{{ profile?.email || 'N/A' }}</strong></div>
+        <div><small>{{ 'PROFILE.ROLE' | translate }}</small><strong>{{ profile?.roleDisplayName || profile?.roleName || 'N/A' }}</strong></div>
+        <div><small>{{ 'PROFILE.STATUS' | translate }}</small><strong>{{ profile?.isActive === false ? ('PROFILE.INACTIVE' | translate) : ('PROFILE.ACTIVE' | translate) }}</strong></div>
+      </div>
+    </section>
+
+    <section class="settings-card" id="preferences">
+      <div class="section-heading">
+        <h3>{{ 'PROFILE.THEME_LANGUAGE' | translate }}</h3>
+        <span>{{ 'PROFILE.RUNTIME_PREFERENCES' | translate }}</span>
+      </div>
+      <div class="preference-grid">
+        <label>
+          <span>{{ 'THEME.SELECT' | translate }}</span>
+          <select class="form-select" [(ngModel)]="selectedTheme" (change)="switchTheme(selectedTheme)">
+            <option value="light">{{ 'THEME.LIGHT' | translate }}</option>
+            <option value="dark">{{ 'THEME.DARK' | translate }}</option>
+            <option value="blue">{{ 'THEME.BLUE' | translate }}</option>
+            <option value="green">{{ 'THEME.GREEN' | translate }}</option>
+            <option value="purple">{{ 'THEME.PURPLE' | translate }}</option>
+          </select>
+        </label>
+        <label>
+          <span>{{ 'LANGUAGE.SELECT' | translate }}</span>
+          <select class="form-select" [(ngModel)]="selectedLanguage" (change)="switchLanguage(selectedLanguage)">
+            <option value="en">{{ 'LANGUAGE.ENGLISH' | translate }}</option>
+            <option value="bn">{{ 'LANGUAGE.BANGLA' | translate }}</option>
+          </select>
+        </label>
+      </div>
+    </section>
+  </div>
+
+  <section class="settings-card">
+    <div class="section-heading">
+      <h3>{{ 'PROFILE.CHANGE_PASSWORD' | translate }}</h3>
+      <span>{{ 'PROFILE.PASSWORD_POLICY' | translate }}</span>
+    </div>
+    <div class="password-entry">
+      <i class="bi bi-envelope-lock"></i>
+      <div>
+        <strong>{{ 'PROFILE.OTP_PASSWORD_FLOW' | translate }}</strong>
+        <span>{{ 'PROFILE.OTP_PASSWORD_FLOW_NOTE' | translate }}</span>
+      </div>
+      <a routerLink="/change-password" class="btn btn-primary">
+        {{ 'PROFILE.CHANGE_PASSWORD' | translate }}
+      </a>
+    </div>
+  </section>
+
+  <section class="settings-card">
+    <div class="section-heading">
+      <h3>{{ 'PROFILE.NOTIFICATION_SETTINGS' | translate }}</h3>
+      <span>{{ 'PROFILE.NOTIFICATION_SETTINGS_NOTE' | translate }}</span>
+    </div>
+    <div class="toggle-list">
+      <label><input type="checkbox" checked> <span>{{ 'PROFILE.EMAIL_NOTIFICATIONS' | translate }}</span></label>
+      <label><input type="checkbox" checked> <span>{{ 'PROFILE.SYSTEM_ALERTS' | translate }}</span></label>
+      <label><input type="checkbox"> <span>{{ 'PROFILE.SECURITY_ALERTS' | translate }}</span></label>
+    </div>
+  </section>
+
+  <section class="settings-card">
+    <div class="section-heading">
+      <h3>{{ 'PROFILE.SECURITY_SETTINGS' | translate }}</h3>
+      <span>{{ 'PROFILE.JWT_PROTECTED' | translate }}</span>
+    </div>
+    <div class="security-list">
+      <div><i class="bi bi-check-circle"></i><span>{{ 'PROFILE.PASSWORD_NOT_RETURNED' | translate }}</span></div>
+      <div><i class="bi bi-check-circle"></i><span>{{ 'PROFILE.OWN_PROFILE_ONLY' | translate }}</span></div>
+      <div><i class="bi bi-check-circle"></i><span>{{ 'PROFILE.ROLE_LOCKED' | translate }}</span></div>
+    </div>
+  </section>
+
+  <section class="settings-card">
+    <div class="section-heading">
+      <h3>{{ 'PROFILE.SYSTEM_SETTINGS' | translate }}</h3>
+      <span>{{ 'PROFILE.SYSTEM_SETTINGS_NOTE' | translate }}</span>
+    </div>
+
+    <div *ngIf="loading" class="text-center py-5">
+      <div class="spinner-border text-primary"></div>
+    </div>
+
+    <form [formGroup]="settingsForm" (ngSubmit)="save()" *ngIf="!loading">
+      <div class="system-grid">
+        <label *ngIf="settingsForm.get('company_name')">
+          <span>Company Name</span>
+          <input type="text" class="form-control" formControlName="company_name">
+        </label>
+        <label *ngIf="settingsForm.get('currency')">
+          <span>Currency</span>
+          <select class="form-select" formControlName="currency">
+            <option value="BDT">BDT (Taka)</option>
+            <option value="USD">USD (Dollar)</option>
+            <option value="INR">INR (Rupee)</option>
+          </select>
+        </label>
+        <label *ngIf="settingsForm.get('tax_rate')">
+          <span>Tax Rate (%)</span>
+          <input type="number" step="0.01" class="form-control" formControlName="tax_rate">
+        </label>
+        <label *ngIf="settingsForm.get('low_stock_threshold')">
+          <span>Low Stock Threshold</span>
+          <input type="number" class="form-control" formControlName="low_stock_threshold">
+        </label>
+        <label *ngIf="settingsForm.get('smtp_host')">
+          <span>SMTP Host</span>
+          <input type="text" class="form-control" formControlName="smtp_host">
+        </label>
+        <label *ngIf="settingsForm.get('smtp_port')">
+          <span>SMTP Port</span>
+          <input type="number" class="form-control" formControlName="smtp_port">
+        </label>
+        <label *ngIf="settingsForm.get('smtp_username')">
+          <span>Email Username</span>
+          <input type="text" class="form-control" formControlName="smtp_username">
+        </label>
+        <label *ngIf="settingsForm.get('smtp_password')">
+          <span>Email Password</span>
+          <input type="password" class="form-control" formControlName="smtp_password">
+        </label>
+        <label *ngIf="settingsForm.get('notification_email')">
+          <span>Notification Email</span>
+          <input type="email" class="form-control" formControlName="notification_email">
+        </label>
+      </div>
+
+      <div class="mt-4 text-end">
+        <button type="submit" class="btn btn-primary px-4" [disabled]="settingsForm.pristine">
+          <i class="bi bi-save"></i> {{ 'COMMON.SAVE' | translate }}
+        </button>
+      </div>
+    </form>
+  </section>
+</div>

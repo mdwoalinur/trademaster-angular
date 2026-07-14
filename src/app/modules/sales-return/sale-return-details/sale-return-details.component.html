@@ -1,0 +1,27 @@
+<div class="container mt-4">
+  <div class="card shadow">
+    <div class="card-header bg-primary text-white">
+      <h3>Sales Return Details</h3>
+    </div>
+    <div class="card-body">
+      <div *ngIf="loading" class="text-center py-5"><div class="spinner-border"></div></div>
+      <div *ngIf="!loading && saleReturn">
+        <div class="row">
+          <div class="col-md-6">
+            <p><strong>Return No:</strong> {{ saleReturn.returnNo }}</p>
+            <p><strong>Sale Invoice:</strong> {{ saleReturn.returnId }}</p>
+            <p><strong>Return Date:</strong> {{ saleReturn.returnDate | date }}</p>
+            <p><strong>Customer ID:</strong> {{ saleReturn.customerId }}</p>
+          </div>
+          <div class="col-md-6">
+            <p><strong>Warehouse ID:</strong> {{ saleReturn.warehouseId }}</p>
+            <p><strong>Total Return Amount:</strong> {{ saleReturn.totalReturnAmount | currency }}</p>
+            <p><strong>Status:</strong> {{ saleReturn.status }}</p>
+            <p><strong>Reason:</strong> {{ saleReturn.reason || '-' }}</p>
+          </div>
+        </div>
+        <button class="btn btn-secondary" (click)="goBack()">Back to List</button>
+      </div>
+    </div>
+  </div>
+</div>

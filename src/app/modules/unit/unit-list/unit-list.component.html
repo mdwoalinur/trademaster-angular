@@ -1,0 +1,73 @@
+<div class="container mt-4 unit-page">
+  <div class="unit-page-header">
+    <div>
+      <h2>Units of Measurement</h2>
+      <p>Manage measurement codes, conversion rules, and base unit relationships.</p>
+    </div>
+    <button class="btn btn-primary" (click)="addUnit()">+ Add Unit</button>
+  </div>
+
+  <div class="unit-filter-bar">
+    <div class="unit-search">
+      <i class="bi bi-search"></i>
+      <input type="text" class="form-control" placeholder="Search by name or code..." [(ngModel)]="searchTerm">
+    </div>
+    <div class="unit-filter">
+      <select class="form-select" [(ngModel)]="filterStatus">
+        <option *ngFor="let opt of statusOptions" [value]="opt">{{ opt }}</option>
+      </select>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="text-center py-4">Loading...</div>
+  <div *ngIf="!loading && filteredUnits.length === 0" class="alert alert-info">No units found.</div>
+
+  <div class="unit-card-grid" *ngIf="!loading">
+    <div class="unit-card" *ngFor="let unit of filteredUnits">
+      <div class="unit-card-header">
+        <span class="unit-code-badge">{{ unit.unitCode }}</span>
+        <span class="unit-type-icon">
+          <i class="bi" [ngClass]="getUnitTypeIcon(unit.unitType)"></i>
+        </span>
+      </div>
+
+      <div class="unit-card-body">
+        <h5>{{ unit.unitName }}</h5>
+        <div class="unit-type-line">
+          <span>Type</span>
+          <strong>{{ getUnitTypeLabel(unit.unitType) }}</strong>
+        </div>
+
+        <div class="conversion-box">
+          <span>Conversion</span>
+          <div class="conversion-value">{{ getConversionText(unit) }}</div>
+        </div>
+
+        <div class="unit-relation-box">
+          <div>
+            <span>Base Unit</span>
+            <strong>{{ getBaseUnitLabel(unit) }}</strong>
+          </div>
+          <div>
+            <span>Is Base Unit</span>
+            <strong [class.base-yes]="unit.isBase">{{ unit.isBase ? 'YES' : 'NO' }}</strong>
+          </div>
+        </div>
+
+        <div class="unit-meta-row">
+          <span><i class="bi bi-calendar3"></i> {{ unit.createdAt | date:'mediumDate' }}</span>
+        </div>
+      </div>
+
+      <div class="unit-action-bar">
+        <span class="badge" [class]="getStatusClass(unit.status)">
+          {{ getStatusText(unit.status) }}
+        </span>
+        <div>
+          <button class="btn btn-sm btn-warning me-2" (click)="editUnit(unit)">Edit</button>
+          <button class="btn btn-sm btn-danger" (click)="deleteUnit(unit)">Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

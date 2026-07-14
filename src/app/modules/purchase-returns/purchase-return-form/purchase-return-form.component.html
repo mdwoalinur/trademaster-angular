@@ -1,0 +1,104 @@
+<div class="container mt-4 purchase-return-page">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>{{ isEdit ? 'Edit' : 'Create' }} Purchase Return</h2>
+    <button class="btn btn-outline-secondary" (click)="cancel()">Back</button>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label">Original Purchase</label>
+          <select class="form-select" [ngModel]="selectedPurchase?.purchaseId" (ngModelChange)="onPurchaseChange($event)" [disabled]="isEdit">
+            <option [ngValue]="undefined">Select received purchase</option>
+            <option *ngFor="let purchase of purchases" [ngValue]="purchase.purchaseId">{{ purchase.purchaseOrderNo }}</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Return Date</label>
+          <input type="date" class="form-control" [(ngModel)]="returnDate">
+        </div>
+        <div class="col-md-5">
+          <label class="form-label">Reason</label>
+          <input class="form-control" [(ngModel)]="reason" placeholder="Damage, wrong item, quality issue..." required>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Supplier</label>
+          <input class="form-control" [value]="selectedPurchase?.supplierId || ''" disabled>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Warehouse</label>
+          <input class="form-control" [value]="selectedPurchase?.warehouseId || ''" disabled>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Notes</label>
+          <input class="form-control" [(ngModel)]="notes">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="text-center py-5"><div class="spinner-border text-primary"></div></div>
+
+  <div *ngIf="!loading && returnableItems.length" class="card mb-3">
+    <div class="card-header"><strong>Return Items</strong></div>
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="theme-table-header">
+          <tr>
+            <th>Product</th>
+            <th>Purchased</th>
+            <th>Returned</th>
+            <th>Returnable</th>
+            <th>Return Qty</th>
+            <th>Unit Price</th>
+            <th>Tax %</th>
+            <th>Line Total</th>
+            <th>Reason</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of returnableItems">
+            <td>
+              <app-product-mini
+                [imageUrl]="item.imageUrl"
+                [productName]="item.productName"
+                [sku]="item.sku">
+              </app-product-mini>
+            </td>
+            <td>{{ item.purchasedQuantity }}</td>
+            <td>{{ item.alreadyReturnedQuantity }}</td>
+            <td>{{ item.returnableQuantity }}</td>
+            <td><input type="number" class="form-control qty-input" min="0" [max]="item.returnableQuantity" [(ngModel)]="item.returnQuantity" (ngModelChange)="calculateTotals()"></td>
+            <td>{{ formatCurrency(item.unitPrice) }}</td>
+            <td>{{ item.taxRate || 0 }}%</td>
+            <td>{{ formatCurrency(lineTotal(item)) }}</td>
+            <td><input class="form-control" [(ngModel)]="item.reason" placeholder="Optional item reason"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div *ngIf="selectedPurchase && !loading && !returnableItems.length" class="alert alert-info">No returnable items found for this purchase.</div>
+
+  <div class="row g-3">
+    <div class="col-md-7"></div>
+    <div class="col-md-5">
+      <div class="card totals-card">
+        <div class="card-body">
+          <div><span>Subtotal</span><strong>{{ formatCurrency(subtotal) }}</strong></div>
+          <div><span>Tax</span><strong>{{ formatCurrency(totalTax) }}</strong></div>
+          <div><span>Discount</span><strong>{{ formatCurrency(totalDiscount) }}</strong></div>
+          <div class="grand"><span>Total</span><strong>{{ formatCurrency(totalAmount) }}</strong></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex justify-content-end gap-2 mt-3">
+    <button class="btn btn-light" (click)="cancel()" [disabled]="submitting">Cancel</button>
+    <button class="btn btn-primary" (click)="save(false)" [disabled]="submitting">Save as Draft</button>
+    <button class="btn btn-success" (click)="save(true)" [disabled]="submitting">Confirm Return</button>
+  </div>
+</div>

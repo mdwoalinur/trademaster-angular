@@ -1,0 +1,240 @@
+<div class="add-sale-page">
+  <div class="add-sale-header">
+    <div class="add-sale-title-box">
+      <div class="add-sale-icon">
+        <i class="bi bi-receipt-cutoff"></i>
+      </div>
+      <div>
+        <h2>{{ isEdit ? 'Edit Sale' : 'Add New Sale' }}</h2>
+        <p>Create a sale invoice and manage sale items efficiently</p>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="sale-loading-card">
+    <div class="spinner-border text-success"></div>
+    <span>Preparing sale form...</span>
+  </div>
+
+  <form [formGroup]="saleForm" (ngSubmit)="showPrintDialog()" *ngIf="!loading" class="sale-form-card">
+    <section class="sale-form-section">
+      <div class="section-heading">
+        <div>
+          <h5>Invoice Information</h5>
+          <span>Set invoice, customer, and warehouse details</span>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-field">
+          <label>Invoice No <span>*</span></label>
+          <input type="text" class="form-control" formControlName="invoiceNo" placeholder="INV-0001">
+        </div>
+
+        <div class="form-field">
+          <label>Sale Date <span>*</span></label>
+          <input type="datetime-local" class="form-control" formControlName="saleDate">
+        </div>
+
+        <div class="form-field">
+          <label>Customer <span>*</span></label>
+          <select class="form-select" formControlName="customerId">
+            <option [ngValue]="null">Select Customer</option>
+            <option *ngFor="let c of customers" [ngValue]="c.customerId">{{ c.customerName }}</option>
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label>Warehouse <span>*</span></label>
+          <select class="form-select" formControlName="warehouseId">
+            <option [ngValue]="null">Select Warehouse</option>
+            <option *ngFor="let w of warehouses" [ngValue]="w.id">{{ w.name }}</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <section class="sale-form-section sale-items-panel">
+      <div class="section-heading sale-items-heading">
+        <div>
+          <h5>Sale Items</h5>
+          <span>Add products, quantity, discount, and tax for this invoice</span>
+        </div>
+        <div class="sale-item-tools">
+          <button type="button" class="btn btn-outline-success" (click)="openScanner()">
+            <i class="bi bi-upc-scan"></i> Scan Barcode
+          </button>
+          <button type="button" class="btn btn-success" (click)="addItem()">
+            <i class="bi bi-plus-lg"></i> Add Item
+          </button>
+        </div>
+      </div>
+
+      <div class="sale-items-scroll" formArrayName="items">
+        <div class="sale-item-header">
+          <span>Product</span>
+          <span>Quantity</span>
+          <span>Unit Price</span>
+          <span>Discount %</span>
+          <span>Tax %</span>
+          <span>Total Price</span>
+          <span>Action</span>
+        </div>
+
+        <div *ngFor="let item of itemsArray.controls; let i = index" [formGroupName]="i" class="sale-item-row">
+          <div class="sale-item-product">
+            <label>Product <span>*</span></label>
+            <select class="form-select" formControlName="productId" (change)="onProductChange(i)">
+              <option [ngValue]="null">Select Product</option>
+              <option *ngFor="let p of products" [ngValue]="p.id">{{ p.productName }}</option>
+            </select>
+            <input type="text" class="form-control product-name-field" formControlName="productName" readonly placeholder="Product name">
+          </div>
+
+          <div class="sale-item-field">
+            <label>Quantity</label>
+            <input type="number" class="form-control" formControlName="quantity" (input)="updateItemTotal(i)" min="1">
+          </div>
+
+          <div class="sale-item-field">
+            <label>Unit Price</label>
+            <input type="number" step="0.01" class="form-control" formControlName="unitPrice" (input)="updateItemTotal(i)" min="0">
+          </div>
+
+          <div class="sale-item-field">
+            <label>Discount %</label>
+            <input type="number" step="0.01" class="form-control" formControlName="discountPercent" (input)="updateItemTotal(i)">
+          </div>
+
+          <div class="sale-item-field">
+            <label>Tax %</label>
+            <input type="number" step="0.01" class="form-control" formControlName="taxRate" (input)="updateItemTotal(i)">
+          </div>
+
+          <div class="sale-item-total">
+            <label>Total Price</label>
+            <strong>{{ formatCurrency(item.get('totalPrice')?.value) }}</strong>
+          </div>
+
+          <div class="sale-item-action">
+            <button type="button" class="remove-item-btn" (click)="removeItem(i)" aria-label="Remove item">
+              <i class="bi bi-trash"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sale-summary-grid">
+      <div class="sale-summary-card">
+        <div class="summary-icon subtotal"><i class="bi bi-calculator"></i></div>
+        <span>Subtotal</span>
+        <strong>{{ formatCurrency(subtotal) }}</strong>
+      </div>
+
+      <div class="sale-summary-card">
+        <div class="summary-icon tax"><i class="bi bi-percent"></i></div>
+        <span>Total Tax</span>
+        <strong>{{ formatCurrency(totalTax) }}</strong>
+      </div>
+
+      <div class="sale-summary-card">
+        <div class="summary-icon discount"><i class="bi bi-tag"></i></div>
+        <span>Total Discount</span>
+        <strong>{{ formatCurrency(totalDiscount) }}</strong>
+      </div>
+
+      <div class="sale-summary-card grand">
+        <div class="summary-icon total"><i class="bi bi-cash-stack"></i></div>
+        <span>Grand Total</span>
+        <strong>{{ formatCurrency(grandTotal) }}</strong>
+      </div>
+    </section>
+
+    <section class="sale-form-section">
+      <div class="section-heading">
+        <div>
+          <h5>Payment & Status</h5>
+          <span>Finalize payment status, sale status, and notes</span>
+        </div>
+      </div>
+
+      <div class="payment-grid">
+        <div class="form-field">
+          <label>Discount Amount</label>
+          <input type="number" step="0.01" class="form-control" formControlName="discountAmount" (input)="calculateTotals()">
+        </div>
+
+        <div class="form-field">
+          <label>Paid Amount</label>
+          <input type="number" step="0.01" class="form-control" formControlName="paidAmount" (input)="calculateTotals()">
+        </div>
+
+        <div class="form-field">
+          <label>Payment Status</label>
+          <select class="form-select" formControlName="paymentStatus">
+            <option value="PAID">Paid</option>
+            <option value="UNPAID">Unpaid</option>
+            <option value="PARTIAL">Partial</option>
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label>Status</label>
+          <select class="form-select" formControlName="status">
+            <option value="COMPLETED">Completed</option>
+            <option value="CANCELLED">Cancelled</option>
+          </select>
+        </div>
+
+        <div class="form-field notes-field">
+          <label>Notes</label>
+          <textarea class="form-control" formControlName="notes" rows="3" placeholder="Add sale notes if needed"></textarea>
+        </div>
+      </div>
+    </section>
+
+    <div class="sale-form-actions">
+      <button type="button" class="btn btn-light sale-cancel-btn" (click)="cancel()">
+        Cancel
+      </button>
+
+      <button type="button" class="btn btn-success sale-complete-btn" (click)="showPrintDialog()" [disabled]="saleForm.invalid">
+        <i class="bi bi-check-circle"></i> {{ isEdit ? 'Update Sale' : 'Complete Sale' }}
+      </button>
+    </div>
+  </form>
+
+  <div class="print-options-modal" *ngIf="showPrintOptions">
+    <div class="print-options-content">
+      <h4><i class="bi bi-printer"></i> Print Options</h4>
+      <div class="print-options-grid">
+        <div class="print-option" (click)="processCheckout('thermal')"><i class="bi bi-receipt"></i><h5>Thermal</h5></div>
+        <div class="print-option" (click)="processCheckout('a4')"><i class="bi bi-file-text"></i><h5>A4 Invoice</h5></div>
+        <div class="print-option" (click)="processCheckout('none')"><i class="bi bi-check-circle"></i><h5>No Print</h5></div>
+      </div>
+      <button class="btn btn-secondary w-100 mt-3" (click)="cancelPrintOptions()">Cancel</button>
+    </div>
+  </div>
+
+  <div class="invoice-modal" *ngIf="showInvoice">
+    <div class="invoice-modal-content">
+      <app-invoice-thermal *ngIf="invoiceType === 'thermal'"
+        [sale]="completedSale" [cart]="invoiceItems" [subtotal]="subtotal"
+        [discountAmount]="saleForm.get('discountAmount')?.value" [taxAmount]="totalTax"
+        [total]="grandTotal" [paidAmount]="saleForm.get('paidAmount')?.value"
+        [change]="saleForm.get('paidAmount')?.value - grandTotal"
+        [paymentMethod]="'CASH'" [customerName]="getCustomerName()"
+        (close)="closeInvoice()">
+      </app-invoice-thermal>
+      <app-invoice-a4 *ngIf="invoiceType === 'a4'"
+        [sale]="completedSale" [cart]="invoiceItems" [subtotal]="subtotal"
+        [discountAmount]="saleForm.get('discountAmount')?.value" [taxAmount]="totalTax"
+        [total]="grandTotal" [paidAmount]="saleForm.get('paidAmount')?.value"
+        [change]="saleForm.get('paidAmount')?.value - grandTotal"
+        [paymentMethod]="'CASH'" [customerName]="getCustomerName()"
+        (close)="closeInvoice()">
+      </app-invoice-a4>
+    </div>
+  </div>
+</div>

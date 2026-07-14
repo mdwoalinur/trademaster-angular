@@ -1,0 +1,128 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2><i class="bi bi-bell"></i> Notification History</h2>
+    <div class="d-flex gap-2">
+      <button class="btn btn-danger" (click)="bulkDeleteSelected()" [disabled]="selectedCount === 0">
+        <i class="bi bi-trash"></i> Delete Selected ({{ selectedCount }})
+      </button>
+      <button class="btn btn-outline-danger" (click)="clearAllNotifications()" [disabled]="totalElements === 0">
+        <i class="bi bi-x-circle"></i> Clear All Notifications
+      </button>
+      <button class="btn btn-outline-secondary" (click)="markAllAsRead()">
+        <i class="bi bi-check2-all"></i> Mark all read
+      </button>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="card mb-3">
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <input type="text" class="form-control" placeholder="Search by title or message..." 
+                 [(ngModel)]="searchKeyword" (input)="onSearch()">
+        </div>
+        <div class="col-md-3">
+          <select class="form-select" [(ngModel)]="selectedType" (change)="onTypeChange()">
+            <option value="">All Types</option>
+            <option value="LOW_STOCK">Low Stock</option>
+            <option value="PAYMENT">Payment</option>
+            <option value="SALE">Sale</option>
+            <option value="PURCHASE">Purchase</option>
+            <option value="PURCHASE_RETURN">Purchase Return</option>
+            <option value="WASTAGE">Wastage</option>
+            <option value="SYSTEM">System</option>
+            <option value="OTHER">Other</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <select class="form-select" [(ngModel)]="selectedRead" (change)="onReadChange()">
+            <option value="">All Status</option>
+            <option [ngValue]="false">Unread</option>
+            <option [ngValue]="true">Read</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <button class="btn btn-outline-secondary w-100" (click)="resetFilters()">
+            <i class="bi bi-eraser"></i> Reset
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="text-center py-5"><div class="spinner-border text-primary"></div></div>
+
+  <!-- Table -->
+  <div *ngIf="!loading" class="table-responsive">
+    <table class="table table-hover table-bordered">
+      <thead class="theme-table-header">
+        <tr>
+          <th class="select-col">
+            <input
+              type="checkbox"
+              class="form-check-input"
+              [checked]="areAllVisibleSelected()"
+              [indeterminate]="isSomeVisibleSelected()"
+              (change)="toggleSelectAll($any($event.target).checked)"
+              [disabled]="notifications.length === 0"
+              aria-label="Select all notifications on current page">
+          </th>
+          <th>Type</th>
+          <th>Title</th>
+          <th>Message</th>
+          <th>Date</th>
+          <th>Status</th>
+          <th style="width:100px">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let n of notifications">
+          <td class="select-col">
+            <input
+              type="checkbox"
+              class="form-check-input"
+              [checked]="isSelected(n)"
+              (change)="toggleSelection(n, $any($event.target).checked)"
+              aria-label="Select notification">
+          </td>
+          <td>
+            <span class="badge" [class]="getTypeBadgeClass(n.type)">{{ n.type }}</span>
+          </td>
+          <td>{{ n.title }}</td>
+          <td>{{ n.message }}</td>
+          <td>{{ formatDate(n.createdAt) }}</td>
+          <td>
+            <span class="badge" [class.bg-success]="n.isRead || n.read" [class.bg-secondary]="!(n.isRead || n.read)">
+              {{ (n.isRead || n.read) ? 'Read' : 'Unread' }}
+            </span>
+          </td>
+          <td>
+            <button *ngIf="!(n.isRead || n.read)" class="btn btn-sm btn-outline-primary me-1" (click)="markAsRead(n)" title="Mark as read">
+              <i class="bi bi-envelope-open"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-danger" (click)="deleteNotification(getNotificationId(n)!)" title="Delete">
+              <i class="bi bi-trash"></i>
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="notifications.length === 0">
+          <td colspan="7" class="text-center py-4">No notifications available.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div *ngIf="totalPages > 1" class="d-flex justify-content-between align-items-center mt-3">
+    <div>Showing {{ (currentPage - 1) * pageSize + 1 }} - {{ Math.min(currentPage * pageSize, totalElements) }} of {{ totalElements }}</div>
+    <div>
+      <button class="btn btn-sm btn-outline-secondary me-2" (click)="firstPage()" [disabled]="currentPage === 1"><i class="bi bi-chevron-double-left"></i></button>
+      <button class="btn btn-sm btn-outline-secondary me-2" (click)="previousPage()" [disabled]="currentPage === 1"><i class="bi bi-chevron-left"></i></button>
+      <span>Page {{ currentPage }} of {{ totalPages }}</span>
+      <button class="btn btn-sm btn-outline-secondary ms-2" (click)="nextPage()" [disabled]="currentPage === totalPages"><i class="bi bi-chevron-right"></i></button>
+      <button class="btn btn-sm btn-outline-secondary ms-2" (click)="lastPage()" [disabled]="currentPage === totalPages"><i class="bi bi-chevron-double-right"></i></button>
+    </div>
+  </div>
+</div>

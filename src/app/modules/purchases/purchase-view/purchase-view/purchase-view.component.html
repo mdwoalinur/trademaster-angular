@@ -1,0 +1,70 @@
+<div class="container mt-4">
+  <div *ngIf="loading" class="text-center py-5"><div class="spinner-border text-primary"></div><p>Loading...</p></div>
+  <div *ngIf="!loading && purchase" class="row">
+    <div class="col-md-8">
+      <div class="card mb-3"><div class="card-header bg-primary text-white"><h5>Purchase Information</h5></div>
+        <div class="card-body">
+          <div class="row"><div class="col-md-6"><p><strong>PO Number:</strong> {{ purchase.purchaseOrderNo }}</p><p><strong>Supplier ID:</strong> {{ purchase.supplierId }}</p><p><strong>Order Date:</strong> {{ formatDate(purchase.purchaseDate) }}</p></div>
+          <div class="col-md-6"><p><strong>Expected Delivery:</strong> {{ formatDate(purchase.expectedDelivery) }}</p><p><strong>Actual Delivery:</strong> {{ formatDate(purchase.actualDelivery) }}</p><p><strong>Status:</strong> <span class="badge" [class]="getStatusBadge(purchase.status)">{{ purchase.status }}</span></p></div></div>
+          <div *ngIf="purchase.paymentTerms"><p><strong>Payment Terms:</strong> {{ purchase.paymentTerms }}</p></div>
+          <div *ngIf="purchase.notes"><p><strong>Notes:</strong> {{ purchase.notes }}</p></div>
+        </div>
+      </div>
+      <div class="card"><div class="card-header bg-secondary text-white"><h5>Purchase Items</h5></div>
+        <div class="card-body p-0">
+          <table class="table table-striped mb-0">
+            <thead><tr><th>Product</th><th>Quantity</th><th>Unit Price</th><th>Tax</th><th>Discount</th><th>Subtotal</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let item of purchase.items"><td><app-product-mini [imageUrl]="getProductImageUrl(item.productId)" [productName]="getProductName(item.productId)" [sku]="getProductSku(item.productId)"></app-product-mini></td><td>{{ item.quantity }}</td><td>{{ formatCurrency(item.unitPrice) }}</td><td>{{ formatCurrency(item.tax) }}</td><td>{{ formatCurrency(item.discount) }}</td><td><strong>{{ formatCurrency(item.quantity * item.unitPrice + (item.tax || 0) - (item.discount || 0)) }}</strong></td></tr>
+            </tbody>
+            <tfoot>
+              <tr><td colspan="5" class="text-end"><strong>Subtotal:</strong></td><td><strong>{{ formatCurrency(purchase.subtotal) }}</strong></td></tr>
+              <tr><td colspan="5" class="text-end"><strong>Tax Amount:</strong></td><td><strong>{{ formatCurrency(purchase.taxAmount) }}</strong></td></tr>
+              <tr><td colspan="5" class="text-end"><strong>Grand Total:</strong></td><td><strong class="text-primary">{{ formatCurrency(purchase.totalAmount) }}</strong></td></tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card mb-3"><div class="card-header bg-info text-white"><h6>Actions</h6></div>
+        <div class="card-body"><div class="d-grid gap-2">
+          <button class="btn btn-warning" (click)="editPurchase()" [disabled]="purchase.status !== 'PENDING'">Edit Purchase</button>
+          <button class="btn btn-success" (click)="markAsReceived()" [disabled]="!canMarkAsReceived()">Mark as Received</button>
+          <button class="btn btn-primary" (click)="requestPayment()" [disabled]="!canRequestPayment()">Request Payment</button>
+          <button class="btn btn-danger" (click)="cancelPurchase()" [disabled]="!canCancel()">Cancel Purchase</button>
+          <button class="btn btn-secondary" (click)="goBack()">Back to List</button>
+        </div></div>
+      </div>
+      <div class="card"><div class="card-header bg-secondary text-white"><h6>Summary</h6></div>
+        <div class="card-body">
+          <div class="d-flex justify-content-between mb-2"><span>Total Items:</span><strong>{{ purchase.items.length || 0 }}</strong></div>
+          <div class="d-flex justify-content-between mb-2"><span>Subtotal:</span><strong>{{ formatCurrency(purchase.subtotal) }}</strong></div>
+          <div class="d-flex justify-content-between mb-2"><span>Total Tax:</span><strong>{{ formatCurrency(purchase.taxAmount) }}</strong></div>
+          <hr><div class="d-flex justify-content-between"><span class="fw-bold">Grand Total:</span><strong class="text-primary fs-5">{{ formatCurrency(purchase.totalAmount) }}</strong></div>
+          <div class="d-flex justify-content-between mt-2"><span>Posted Paid:</span><strong class="text-success">{{ formatCurrency(paymentSummary?.paidAmount ?? purchase.paidAmount ?? 0) }}</strong></div>
+          <div class="d-flex justify-content-between mt-2"><span>Due:</span><strong class="text-danger">{{ formatCurrency(paymentSummary?.dueAmount ?? purchase.dueAmount ?? purchase.totalAmount) }}</strong></div>
+          <div class="d-flex justify-content-between mt-2"><span>Payment Status:</span><strong>{{ paymentSummary?.paymentStatus || purchase.paymentStatus || 'UNPAID' }}</strong></div>
+        </div>
+      </div>
+      <div class="card mt-3"><div class="card-header bg-secondary text-white"><h6>Payment History</h6></div>
+        <div class="card-body p-0">
+          <table class="table table-sm mb-0">
+            <thead><tr><th>Voucher</th><th>Amount</th><th>Approval</th><th>Transaction</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let payment of purchasePayments">
+                <td>{{ payment.voucherNo || '-' }}</td>
+                <td>{{ formatCurrency(payment.approvedAmount || payment.requestedAmount || payment.amount) }}</td>
+                <td>{{ payment.approvalStatus || '-' }}</td>
+                <td>{{ payment.transactionStatus || '-' }}</td>
+              </tr>
+              <tr *ngIf="purchasePayments.length === 0">
+                <td colspan="4" class="text-center text-muted py-3">No payment requests found.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

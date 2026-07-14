@@ -1,0 +1,74 @@
+.audit-log-page {
+  min-width: 0;
+}
+
+.audit-filter-card,
+.audit-table-wrapper {
+  border: 1px solid var(--tm-border-color, #e5e7eb);
+  border-radius: 8px;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
+}
+
+.audit-table-wrapper {
+  background: var(--tm-card-bg, #fff);
+}
+
+.audit-table {
+  min-width: 980px;
+  margin-bottom: 0;
+}
+
+.audit-table .badge {
+  font-size: 0.72rem;
+  letter-spacing: 0;
+  white-space: normal;
+}
+
+/* ================= FIX HEADER ================= */
+
+/* Fix Bootstrap override problem */
+.table thead th {
+  background-color: var(--tm-table-header-bg) !important;
+  color: var(--tm-table-header-text) !important;
+  opacity: 1 !important;
+  font-weight: 600;
+  border-color: var(--tm-table-header-border) !important;
+  border-bottom: 1px solid var(--tm-table-header-border);
+}
+
+/* Optional: nicer UI */
+.custom-header th {
+  background: var(--tm-table-header-bg) !important;
+  color: var(--tm-table-header-text) !important;
+  border-color: var(--tm-table-header-border) !important;
+}
+
+/* ================= BODY TABLE ================= */
+
+.table tbody td {
+  padding: 0.75rem 1rem;
+  vertical-align: middle;
+  border-bottom: 1px solid #f0f2f5;
+  font-size: 0.9rem;
+}
+
+/* IMPORTANT: remove global override */
+.table th {
+  /* REMOVE background: #f8f9fa; */
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 1rem;
+}
+.table-hover tbody tr:hover {
+  background-color: var(--tm-primary-soft);
+}
+
+@media (max-width: 1200px) {
+  .audit-table tbody td,
+  .audit-table th {
+    padding: 0.65rem 0.75rem;
+    font-size: 0.82rem;
+  }
+}

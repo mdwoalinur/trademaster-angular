@@ -1,0 +1,51 @@
+<footer class="tm-footer" aria-label="TradeMaster footer">
+  <div class="tm-footer-inner">
+    <section class="tm-footer-brand">
+      <img src="assets/images/icon.png" alt="TradeMaster logo">
+      <div>
+        <h2>TRADE<span>MASTER</span></h2>
+        <p>{{ 'FOOTER.SUBTITLE' | translate }}</p>
+      </div>
+    </section>
+
+    <nav class="tm-footer-section" [attr.aria-label]="'FOOTER.PRODUCT' | translate">
+      <h3>{{ 'FOOTER.PRODUCT' | translate }}</h3>
+      <a routerLink="/dashboard">{{ 'FOOTER.DASHBOARD' | translate }}</a>
+      <a routerLink="/settings">{{ 'FOOTER.SETTINGS' | translate }}</a>
+    </nav>
+
+    <section class="tm-footer-section">
+      <h3>{{ 'FOOTER.SUPPORT' | translate }}</h3>
+      <span>{{ 'FOOTER.HELP_CENTER' | translate }}</span>
+      <span>{{ 'FOOTER.CONTACT_US' | translate }}</span>
+    </section>
+
+    <section class="tm-footer-section">
+      <h3>{{ 'FOOTER.LEGAL' | translate }}</h3>
+      <span>{{ 'FOOTER.PRIVACY_POLICY' | translate }}</span>
+      <span>{{ 'FOOTER.TERMS_OF_SERVICE' | translate }}</span>
+    </section>
+
+    <section class="tm-footer-section">
+      <h3>{{ 'FOOTER.COMPANY' | translate }}</h3>
+      <span>{{ 'FOOTER.ABOUT_US' | translate }}</span>
+      <span>{{ 'FOOTER.UPDATES' | translate }}</span>
+    </section>
+
+    <address class="tm-footer-contact">
+      <a href="mailto:mdwoalinur@gmail.com">
+        <i class="bi bi-envelope"></i>
+        <span>mdwoalinur@gmail.com</span>
+      </a>
+      <a href="tel:+8801795479789">
+        <i class="bi bi-telephone"></i>
+        <span>+8801795479789</span>
+      </a>
+    </address>
+
+    <section class="tm-footer-copy">
+      <p>{{ 'FOOTER.COPYRIGHT' | translate:{ year: currentYear } }}</p>
+      <p>{{ 'FOOTER.RIGHTS_VERSION' | translate }}</p>
+    </section>
+  </div>
+</footer>

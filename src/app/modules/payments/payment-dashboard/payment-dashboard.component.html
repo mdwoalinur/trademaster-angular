@@ -1,0 +1,133 @@
+<div class="payment-dashboard-page">
+  <div class="page-header">
+    <div>
+      <h2>Payment Dashboard</h2>
+      <p>Approval-first cash, bank, refund, transfer, and reconciliation overview.</p>
+    </div>
+    <div class="date-filter">
+      <input type="date" class="form-control" [(ngModel)]="startDate">
+      <input type="date" class="form-control" [(ngModel)]="endDate">
+      <button type="button" class="btn btn-success" (click)="load()">Generate</button>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-success"></div>
+  </div>
+
+  <ng-container *ngIf="!loading">
+    <div class="dashboard-grid">
+      <article>
+        <span>Today Received</span>
+        <strong>{{ formatCurrency(data.todayReceived) }}</strong>
+      </article>
+      <article>
+        <span>Today Paid</span>
+        <strong>{{ formatCurrency(data.todayPaid) }}</strong>
+      </article>
+      <article>
+        <span>Pending Approval</span>
+        <strong>{{ data.pendingApprovalCount || 0 }}</strong>
+        <small>{{ formatCurrency(data.pendingApprovalAmount) }}</small>
+      </article>
+      <article>
+        <span>Unreconciled</span>
+        <strong>{{ data.unreconciledCount || 0 }}</strong>
+      </article>
+      <article>
+        <span>Month Received</span>
+        <strong>{{ formatCurrency(data.monthReceived) }}</strong>
+      </article>
+      <article>
+        <span>Month Paid</span>
+        <strong>{{ formatCurrency(data.monthPaid) }}</strong>
+      </article>
+      <article>
+        <span>Refunds This Month</span>
+        <strong>{{ formatCurrency(data.refundAmountThisMonth) }}</strong>
+      </article>
+      <article>
+        <span>Voids This Month</span>
+        <strong>{{ formatCurrency(data.voidAmountThisMonth) }}</strong>
+      </article>
+    </div>
+
+    <div class="content-grid">
+      <section class="panel">
+        <h5>Account Balances</h5>
+        <div class="balance-row" *ngFor="let account of data.accountBalances || []">
+          <div>
+            <strong>{{ account.accountName }}</strong>
+            <small>{{ account.accountCode }} / {{ account.accountType }}</small>
+          </div>
+          <b>{{ formatCurrency(account.currentBalance) }}</b>
+        </div>
+        <div *ngIf="!(data.accountBalances || []).length" class="empty-state">No accounts found.</div>
+      </section>
+
+      <section class="panel">
+        <h5>Payment Method Distribution</h5>
+        <div class="method-row" *ngFor="let item of data.methodDistribution || []">
+          <span>{{ item.label }}</span>
+          <strong>{{ item.count }}</strong>
+          <b>{{ formatCurrency(item.amount) }}</b>
+        </div>
+        <div *ngIf="!(data.methodDistribution || []).length" class="empty-state">No method data found.</div>
+      </section>
+    </div>
+
+    <div class="content-grid">
+      <section class="panel">
+        <h5>Recent Payments</h5>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="theme-table-header">
+              <tr>
+                <th>Voucher</th>
+                <th>Type</th>
+                <th>Status</th>
+                <th class="text-end">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let payment of data.recentPayments || []">
+                <td>{{ payment.voucherNo || payment.paymentId }}</td>
+                <td>{{ payment.paymentType }} / {{ payment.direction }}</td>
+                <td>{{ payment.approvalStatus }} / {{ payment.transactionStatus }}</td>
+                <td class="text-end">{{ formatCurrency(payment.approvedAmount || payment.requestedAmount || payment.amount) }}</td>
+              </tr>
+              <tr *ngIf="!(data.recentPayments || []).length">
+                <td colspan="4" class="text-center text-muted py-3">No recent payments.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h5>Pending Approval Queue</h5>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="theme-table-header">
+              <tr>
+                <th>Voucher</th>
+                <th>Type</th>
+                <th class="text-end">Requested</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let payment of data.pendingApprovals || []">
+                <td>{{ payment.voucherNo || payment.paymentId }}</td>
+                <td>{{ payment.paymentType }} / {{ payment.direction }}</td>
+                <td class="text-end">{{ formatCurrency(payment.requestedAmount || payment.amount) }}</td>
+              </tr>
+              <tr *ngIf="!(data.pendingApprovals || []).length">
+                <td colspan="3" class="text-center text-muted py-3">No pending approvals.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </ng-container>
+</div>

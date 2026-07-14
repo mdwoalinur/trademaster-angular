@@ -1,0 +1,122 @@
+<div class="invoice-container" id="sale-invoice">
+  <!-- Header -->
+  <div class="invoice-header">
+    <div class="company-info">
+      <h1 class="company-name">TRADEMASTER</h1>
+      <p class="company-tagline">Smart Inventory, Better Decision</p>
+      <p class="company-details">
+        123 Business Avenue, Dhaka, Bangladesh<br>
+        Phone: +880 1795479789 | Email: mdwoalinur@gmail.com<br>
+        GST: 27AAPFU0939F1ZV
+      </p>
+    </div>
+    <div class="invoice-title">
+      <h2>SALES INVOICE</h2>
+      <div class="invoice-badge">{{ sale?.status === 'COMPLETED' ? 'ORIGINAL' : 'COPY' }}</div>
+    </div>
+  </div>
+
+  <!-- Invoice Details -->
+  <div class="invoice-details">
+    <div class="row">
+      <div class="col-6">
+        <table class="details-table">
+          <tr><td class="label">Invoice No:</td><td class="value"><strong>{{ sale?.invoiceNo }}</strong></td></tr>
+          <tr><td class="label">Invoice Date:</td><td class="value">{{ sale?.saleDate | date:'dd MMM yyyy, hh:mm a' }}</td></tr>
+          <tr><td class="label">Warehouse:</td><td class="value">{{ warehouseName }}</td></tr>
+        </table>
+      </div>
+      <div class="col-6">
+        <table class="details-table">
+          <tr>
+            <td class="label">Customer:</td>
+            <td class="value">
+              <app-customer-mini
+                [photoUrl]="customerPhotoUrl"
+                [customerName]="customerName || 'Walk-in Customer'"
+                [email]="customerEmail"
+                [phone]="customerPhone"
+                [compact]="true">
+              </app-customer-mini>
+            </td>
+          </tr>
+          <tr *ngIf="customerPhone"><td class="label">Phone:</td><td class="value">{{ customerPhone }}</td></tr>
+          <tr *ngIf="customerEmail"><td class="label">Email:</td><td class="value">{{ customerEmail }}</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Items Table -->
+  <table class="items-table">
+    <thead>
+      <tr>
+        <th style="width:5%">#</th>
+        <th style="width:40%">Description</th>
+        <th style="width:10%">Qty</th>
+        <th style="width:15%">Unit Price</th>
+        <th style="width:10%">Disc%</th>
+        <th style="width:20%">Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let item of items; let i = index">
+        <td class="text-center">{{ i + 1 }}</td>
+        <td>{{ item.productName }}<br><small class="text-muted">{{ item.sku }}</small></td>
+        <td class="text-center">{{ item.quantity }}</td>
+        <td class="text-right">{{ item.unitPrice | currency }}</td>
+        <td class="text-center">{{ item.discountPercent || 0 }}%</td>
+        <td class="text-right">{{ item.totalPrice | currency }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Totals -->
+  <div class="totals-section">
+    <div class="row">
+      <div class="col-7">
+        <div class="notes">
+          <p class="notes-label">Notes:</p>
+          <p>{{ sale?.notes || '-' }}</p>
+        </div>
+        <div class="terms">
+          <p class="terms-label">Payment Method:</p>
+          <p>{{ getPaymentMethodLabel(sale?.paymentMethod || 'CASH') }}</p>
+        </div>
+      </div>
+      <div class="col-5">
+        <table class="totals-table">
+          <tr><td>Subtotal:</td><td class="text-right">{{ sale?.subtotal | currency }}</td></tr>
+          <tr *ngIf="sale?.discountAmount > 0"><td>Discount:</td><td class="text-right text-danger">-{{ sale?.discountAmount | currency }}</td></tr>
+          <tr *ngIf="sale?.taxAmount > 0"><td>Tax:</td><td class="text-right">{{ sale?.taxAmount | currency }}</td></tr>
+          <tr class="grand-total-row"><td><strong>Grand Total:</strong></td><td class="text-right"><strong>{{ sale?.totalAmount | currency }}</strong></td></tr>
+          <tr><td>Paid Amount:</td><td class="text-right">{{ sale?.paidAmount | currency }}</td></tr>
+          <tr *ngIf="sale?.dueAmount > 0"><td>Due Amount:</td><td class="text-right text-danger">{{ sale?.dueAmount | currency }}</td></tr>
+          <tr *ngIf="sale?.change > 0"><td>Change:</td><td class="text-right text-success">{{ sale?.change | currency }}</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="invoice-footer">
+    <div class="authorized-signature">
+      <p class="signature-line">Authorized Signature</p>
+      <p>_________________________</p>
+    </div>
+    <div class="thank-you">
+      <p>Thank you for your business!</p>
+      <p class="generated-note">Powered by TradeMaster</p>
+    </div>
+  </div>
+</div>
+
+<!-- Print Actions -->
+<div class="print-actions no-print">
+  <button class="btn btn-primary" (click)="printInvoice()">
+    <i class="bi bi-printer"></i> Print Invoice
+  </button>
+  <button class="btn btn-outline-secondary" (click)="onClose()">
+    <i class="bi bi-x-circle"></i> Close
+  </button>
+</div>

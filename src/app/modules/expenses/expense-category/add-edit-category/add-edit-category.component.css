@@ -1,0 +1,15 @@
+:host {
+  display: block;
+  color: var(--tm-text);
+}
+
+.card {
+  background: var(--tm-surface);
+  border-color: var(--tm-border);
+  box-shadow: var(--tm-shadow);
+}
+
+.card-header {
+  background: var(--tm-primary) !important;
+  border-color: var(--tm-primary) !important;
+}

@@ -1,0 +1,114 @@
+<div class="profit-loss-page">
+  <div class="report-header">
+    <div>
+      <h2>Profit & Loss Report</h2>
+      <p>Dynamic financial report from {{ startDate }} to {{ endDate }}</p>
+    </div>
+    <div class="report-actions">
+      <button class="btn btn-outline-primary" (click)="printReport()"><i class="bi bi-printer"></i> Print Report</button>
+      <button class="btn btn-outline-success" (click)="exportCsv()" [disabled]="!profitLoss"><i class="bi bi-file-earmark-spreadsheet"></i> Export CSV</button>
+    </div>
+  </div>
+
+  <section class="filter-card no-print">
+    <div class="row g-3 align-items-end">
+      <div class="col-md-3">
+        <label class="form-label">Start Date</label>
+        <input type="date" class="form-control" [(ngModel)]="startDate">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">End Date</label>
+        <input type="date" class="form-control" [(ngModel)]="endDate">
+      </div>
+      <div class="col-md-3">
+        <button class="btn btn-primary w-100" (click)="loadReport()" [disabled]="loading">
+          <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+          <i class="bi bi-arrow-repeat" *ngIf="!loading"></i> Generate Report
+        </button>
+      </div>
+      <div class="col-md-3">
+        <button class="btn btn-light w-100" (click)="resetFilters()" [disabled]="loading">Reset</button>
+      </div>
+      <div class="col-12 quick-filters">
+        <button type="button" (click)="applyQuickFilter('today')">Today</button>
+        <button type="button" (click)="applyQuickFilter('week')">This Week</button>
+        <button type="button" (click)="applyQuickFilter('month')">This Month</button>
+        <button type="button" (click)="applyQuickFilter('year')">This Year</button>
+      </div>
+    </div>
+  </section>
+
+  <div *ngIf="loading" class="state-card">
+    <div class="spinner-border text-success"></div>
+    <span>Calculating report from database...</span>
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+  <ng-container *ngIf="profitLoss && !loading">
+    <div id="profitLossPrintableArea" class="profit-loss-print-area">
+    <div class="print-only print-cover">
+      <h1>Profit & Loss Report</h1>
+      <p>Date range: {{ startDate }} to {{ endDate }}</p>
+      <p>Generated: {{ generatedAt | date:'medium' }}</p>
+    </div>
+
+    <section class="kpi-grid">
+      <div class="kpi-card revenue"><div class="kpi-icon"><i class="bi bi-graph-up-arrow"></i></div><div class="kpi-content"><span>Total Revenue</span><strong>{{ formatCurrency(totalRevenue()) }}</strong><small>Completed sales</small></div></div>
+      <div class="kpi-card cost"><div class="kpi-icon"><i class="bi bi-box-seam"></i></div><div class="kpi-content"><span>Cost of Goods Sold</span><strong>{{ formatCurrency(costOfGoodsSold()) }}</strong><small>Sale item cost</small></div></div>
+      <div class="kpi-card gross"><div class="kpi-icon"><i class="bi bi-cash-stack"></i></div><div class="kpi-content"><span>Gross Profit</span><strong>{{ formatCurrency(grossProfit()) }}</strong><small>Revenue minus COGS</small></div></div>
+      <div class="kpi-card expense"><div class="kpi-icon"><i class="bi bi-receipt-cutoff"></i></div><div class="kpi-content"><span>Total Expenses</span><strong>{{ formatCurrency(totalExpenses()) }}</strong><small>Approved expenses</small></div></div>
+      <div class="kpi-card" [class.profit]="netProfit() >= 0" [class.loss]="netProfit() < 0"><div class="kpi-icon"><i class="bi bi-wallet2"></i></div><div class="kpi-content"><span>Net Profit</span><strong>{{ formatCurrency(netProfit()) }}</strong><small>Final result</small></div></div>
+      <div class="kpi-card percent gross-margin"><div class="kpi-icon"><i class="bi bi-percent"></i></div><div class="kpi-content"><span>Gross Profit Margin</span><strong>{{ formatPercent(profitLoss.grossProfitMargin) }}</strong><small>Gross efficiency</small></div></div>
+      <div class="kpi-card percent net-margin"><div class="kpi-icon"><i class="bi bi-percent"></i></div><div class="kpi-content"><span>Net Profit Margin</span><strong>{{ formatPercent(profitLoss.netProfitMargin) }}</strong><small>Net efficiency</small></div></div>
+      <div class="kpi-card count"><div class="kpi-icon"><i class="bi bi-receipt"></i></div><div class="kpi-content"><span>Total Sales Count</span><strong>{{ profitLoss.salesCount || 0 }}</strong><small>Invoices</small></div></div>
+      <div class="kpi-card count"><div class="kpi-icon"><i class="bi bi-cart-check"></i></div><div class="kpi-content"><span>Total Purchase Count</span><strong>{{ profitLoss.purchaseCount || 0 }}</strong><small>Purchase orders</small></div></div>
+      <div class="kpi-card count"><div class="kpi-icon"><i class="bi bi-journal-text"></i></div><div class="kpi-content"><span>Total Expense Count</span><strong>{{ profitLoss.expenseCount || 0 }}</strong><small>Expense records</small></div></div>
+    </section>
+
+    <section class="chart-grid">
+      <div class="report-card"><h5>Revenue vs Expenses vs Net Profit</h5><div class="chart-box"><canvas id="plSummaryChart"></canvas></div></div>
+      <div class="report-card"><h5>Profit Trend</h5><div class="chart-box"><canvas id="plTrendChart"></canvas></div></div>
+      <div class="report-card"><h5>Expense Breakdown</h5><div class="chart-box"><canvas id="plExpenseChart"></canvas></div><div class="empty-note" *ngIf="!(profitLoss.expenseBreakdown || []).length">No expenses found.</div></div>
+    </section>
+
+    <section class="table-grid">
+      <div class="report-card">
+        <h5>Revenue Breakdown</h5>
+        <table><thead><tr><th>Source</th><th>Count</th><th>Amount</th><th>%</th></tr></thead>
+          <tbody><tr *ngFor="let row of profitLoss.revenueBreakdown"><td>{{ row.source }}</td><td>{{ row.count }}</td><td>{{ formatCurrency(row.amount) }}</td><td>{{ formatPercent(row.percentage) }}</td></tr><tr *ngIf="!(profitLoss.revenueBreakdown || []).length"><td colspan="4">No revenue found.</td></tr></tbody>
+        </table>
+      </div>
+      <div class="report-card">
+        <h5>Cost / Purchase Breakdown</h5>
+        <table><thead><tr><th>Type</th><th>Count</th><th>Amount</th><th>%</th></tr></thead>
+          <tbody><tr *ngFor="let row of profitLoss.purchaseBreakdown"><td>{{ row.type }}</td><td>{{ row.count }}</td><td>{{ formatCurrency(row.amount) }}</td><td>{{ formatPercent(row.percentage) }}</td></tr><tr *ngIf="!(profitLoss.purchaseBreakdown || []).length"><td colspan="4">No cost data found.</td></tr></tbody>
+        </table>
+      </div>
+      <div class="report-card">
+        <h5>Expense Breakdown</h5>
+        <table><thead><tr><th>Expense Category</th><th>Count</th><th>Total Amount</th><th>%</th></tr></thead>
+          <tbody><tr *ngFor="let row of profitLoss.expenseBreakdown"><td>{{ row.categoryName }}</td><td>{{ row.count }}</td><td>{{ formatCurrency(row.amount) }}</td><td>{{ formatPercent(row.percentage) }}</td></tr><tr *ngIf="!(profitLoss.expenseBreakdown || []).length"><td colspan="4">No expenses found.</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="bottom-grid">
+      <div class="report-card calculation-card">
+        <h5>Profit Calculation</h5>
+        <div><span>Total Revenue</span><strong>{{ formatCurrency(totalRevenue()) }}</strong></div>
+        <div><span>- Cost of Goods Sold</span><strong>{{ formatCurrency(costOfGoodsSold()) }}</strong></div>
+        <div class="total"><span>= Gross Profit</span><strong>{{ formatCurrency(grossProfit()) }}</strong></div>
+        <div><span>- Total Expenses</span><strong>{{ formatCurrency(totalExpenses()) }}</strong></div>
+        <div class="grand" [class.loss-text]="netProfit() < 0"><span>= Net Profit</span><strong>{{ formatCurrency(netProfit()) }}</strong></div>
+      </div>
+      <div class="report-card insight-card">
+        <h5>Business Insights</h5>
+        <div *ngFor="let message of profitLoss.insights" class="insight" [ngClass]="insightClass(message)"><i class="bi bi-info-circle"></i>{{ message }}</div>
+        <div *ngIf="!(profitLoss.insights || []).length" class="insight info">No insight available for this period.</div>
+      </div>
+    </section>
+    <div class="print-only print-footer">TradeMaster Inventory & Stock Management System</div>
+    </div>
+  </ng-container>
+</div>

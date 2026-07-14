@@ -1,0 +1,88 @@
+<div class="container mt-4">
+  <div class="card shadow">
+    <div class="card-header bg-primary text-white">
+      <h3>{{ isEdit ? 'Edit Wastage Category' : 'Add Wastage Category' }}</h3>
+    </div>
+    <div class="card-body">
+      <div *ngIf="loading" class="text-center py-5">
+        <div class="spinner-border text-primary"></div>
+        <p class="mt-2">Loading...</p>
+      </div>
+      
+      <form [formGroup]="categoryForm" (ngSubmit)="save()" *ngIf="!loading">
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Category Name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" formControlName="categoryName" 
+                   placeholder="e.g., Expired Goods"
+                   [class.is-invalid]="categoryName?.invalid && categoryName?.touched">
+            <div class="invalid-feedback" *ngIf="categoryName?.invalid && categoryName?.touched">
+              <span *ngIf="categoryName?.errors?.['required']">Category name is required</span>
+              <span *ngIf="categoryName?.errors?.['minlength']">Minimum 2 characters required</span>
+            </div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Category Code <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" formControlName="categoryCode" 
+                   placeholder="e.g., EXP-001"
+                   style="text-transform: uppercase;"
+                   [class.is-invalid]="categoryCode?.invalid && categoryCode?.touched">
+            <div class="invalid-feedback" *ngIf="categoryCode?.invalid && categoryCode?.touched">
+              <span *ngIf="categoryCode?.errors?.['required']">Category code is required</span>
+              <span *ngIf="categoryCode?.errors?.['minlength']">Minimum 2 characters required</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="row">
+          <div class="col-md-12 mb-3">
+            <label class="form-label">Description</label>
+            <textarea class="form-control" formControlName="description" rows="2" 
+                      placeholder="Optional description..."></textarea>
+          </div>
+        </div>
+        
+        <div class="row">
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Loss Percentage (%)</label>
+            <input type="number" step="0.01" class="form-control" formControlName="lossPercentage" 
+                   placeholder="0.00"
+                   [class.is-invalid]="lossPercentage?.invalid && lossPercentage?.touched">
+            <div class="invalid-feedback" *ngIf="lossPercentage?.invalid && lossPercentage?.touched">
+              <span *ngIf="lossPercentage?.errors?.['min']">Minimum value is 0</span>
+              <span *ngIf="lossPercentage?.errors?.['max']">Maximum value is 100</span>
+            </div>
+          </div>
+          <div class="col-md-4 mb-3">
+            <div class="form-check mt-4">
+              <input type="checkbox" class="form-check-input" formControlName="status" id="status">
+              <label class="form-check-label" for="status">
+                <span class="fw-semibold">Active</span>
+                <small class="text-muted d-block">Inactive categories won't appear in dropdowns</small>
+              </label>
+            </div>
+          </div>
+        </div>
+        
+        <!--Form validation summary -->
+        <div class="alert alert-warning" *ngIf="categoryForm.invalid && categoryForm.touched">
+          <i class="bi bi-exclamation-triangle"></i>
+          Please fix the validation errors above.
+        </div>
+        
+        <hr>
+        
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary" [disabled]="loading">
+            <i class="bi bi-save" *ngIf="!loading"></i>
+            <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+            {{ loading ? 'Saving...' : (isEdit ? 'Update Category' : 'Save Category') }}
+          </button>
+          <button type="button" class="btn btn-outline-secondary" (click)="cancel()" [disabled]="loading">
+            <i class="bi bi-x-circle"></i> Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

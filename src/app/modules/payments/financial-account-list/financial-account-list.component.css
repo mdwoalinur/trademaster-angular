@@ -1,0 +1,53 @@
+.financial-accounts-page {
+  color: var(--tm-text);
+  padding: 24px;
+}
+
+.page-title-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 18px;
+}
+
+.page-title-row h2 {
+  margin: 0;
+  font-weight: 700;
+}
+
+.page-title-row p {
+  margin: 6px 0 0;
+  color: var(--tm-text-muted);
+}
+
+.card,
+.account-table-wrap {
+  background: var(--tm-surface);
+  border: 1px solid var(--tm-border);
+  border-radius: 8px;
+  box-shadow: var(--tm-shadow);
+}
+
+.account-table-wrap {
+  overflow-x: auto;
+}
+
+.table {
+  margin-bottom: 0;
+}
+
+.statement-card .card-header {
+  background: var(--tm-surface-soft, rgba(22, 163, 74, 0.08));
+  border-color: var(--tm-border);
+}
+
+@media (max-width: 768px) {
+  .financial-accounts-page {
+    padding: 16px;
+  }
+
+  .page-title-row {
+    flex-direction: column;
+  }
+}

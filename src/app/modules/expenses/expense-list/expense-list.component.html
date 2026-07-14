@@ -1,0 +1,110 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>{{ 'EXPENSE.TITLE' | translate }}</h2>
+    <button class="btn btn-primary" (click)="addExpense()">
+      <i class="bi bi-plus-circle"></i> {{ 'EXPENSE.ADD_EXPENSE' | translate }}
+    </button>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <input type="text" class="form-control" [placeholder]="'EXPENSE.SEARCH_PLACEHOLDER' | translate" [(ngModel)]="searchKeyword" (input)="onSearch()">
+        </div>
+        <div class="col-md-3">
+          <select class="form-select" [(ngModel)]="selectedStatus" (change)="onStatusChange()">
+            <option value="">{{ 'STATUS.ALL_STATUS' | translate }}</option>
+            <option *ngFor="let s of statusOptions" [value]="s">{{ s | statusLabel }}</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <button class="btn btn-outline-secondary w-100" (click)="resetFilters()">
+            <i class="bi bi-eraser"></i> {{ 'COMMON.RESET' | translate }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="text-center py-5"><div class="spinner-border text-primary"></div></div>
+
+  <div *ngIf="!loading" class="table-responsive">
+    <table class="table table-hover table-bordered">
+      <thead class="theme-table-header">
+        <tr>
+          <th>{{ 'EXPENSE.EXPENSE_NO' | translate }}</th>
+          <th>{{ 'COMMON.DATE' | translate }}</th>
+          <th>{{ 'EXPENSE.VENDOR' | translate }}</th>
+          <th>{{ 'EXPENSE.TOTAL' | translate }}</th>
+          <th>{{ 'COMMON.PAYMENT' | translate }}</th>
+          <th>{{ 'COMMON.STATUS' | translate }}</th>
+          <th style="min-width: 160px;">{{ 'COMMON.ACTIONS' | translate }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let e of expenses">
+          <td>{{ e.expenseNo }}</td>
+          <td>{{ formatDate(e.expenseDate) }}</td>
+          <td>{{ getVendorName(e.vendorId) }}</td>   
+          <td>{{ formatCurrency(e.grandTotal) }}</td>
+          <td><span class="badge" [class]="getPaymentStatusBadge(e.paymentStatus)">{{ e.paymentStatus | statusLabel }}</span></td>
+          <td><span class="badge" [class]="getStatusBadge(e.status)">{{ e.status | statusLabel }}</span></td>
+          <td>
+            <!-- View Button -->
+            <button class="btn btn-sm btn-info me-1" (click)="viewExpense(e.expenseId!)" [title]="'COMMON.VIEW' | translate">
+              <i class="bi bi-eye"></i>
+            </button>
+
+            <button class="btn btn-sm btn-primary me-1" (click)="viewAttachments(e)" [title]="'EXPENSE.VIEW_RECEIPTS' | translate">
+              <i class="bi bi-paperclip"></i>
+            </button>
+            
+            <!-- Edit Button (only if not APPROVED/REJECTED) -->
+            <button class="btn btn-sm btn-warning me-1" 
+                    (click)="editExpense(e.expenseId!)" 
+                    *ngIf="e.status !== 'APPROVED' && e.status !== 'REJECTED'"
+                    [title]="'COMMON.EDIT' | translate">
+              <i class="bi bi-pencil"></i>
+            </button>
+            
+           
+            <button *ngIf="e.status === 'SUBMITTED'" 
+                    class="btn btn-sm btn-success me-1" 
+                    (click)="quickApprove(e.expenseId!)" 
+                    [title]="'COMMON.APPROVE' | translate">
+              <i class="bi bi-check-lg"></i>
+            </button>
+
+            <button *ngIf="e.status === 'APPROVED' && e.paymentStatus !== 'PAID'"
+                    class="btn btn-sm btn-outline-success me-1"
+                    (click)="requestPayment(e)"
+                    [title]="'EXPENSE.REQUEST_PAYMENT' | translate">
+              <i class="bi bi-cash-coin"></i>
+            </button>
+            
+            <!-- Delete Button -->
+            <button class="btn btn-sm btn-danger" (click)="deleteExpense(e.expenseId!)" [title]="'COMMON.DELETE' | translate">
+              <i class="bi bi-trash"></i>
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="expenses.length === 0">
+          <td colspan="7" class="text-center py-4">{{ 'EXPENSE.NO_EXPENSES_FOUND' | translate }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div *ngIf="totalPages > 1" class="d-flex justify-content-between align-items-center mt-3">
+    <div>{{ 'COMMON.SHOWING_RANGE' | translate:{ from: (currentPage - 1) * pageSize + 1, to: Math.min(currentPage * pageSize, totalElements), total: totalElements } }}</div>
+    <div>
+      <button class="btn btn-outline-secondary btn-sm me-2" (click)="firstPage()" [disabled]="currentPage === 1"><i class="bi bi-chevron-double-left"></i></button>
+      <button class="btn btn-outline-secondary btn-sm me-2" (click)="previousPage()" [disabled]="currentPage === 1"><i class="bi bi-chevron-left"></i></button>
+      <span>{{ 'COMMON.PAGE_OF' | translate:{ page: currentPage, total: totalPages } }}</span>
+      <button class="btn btn-outline-secondary btn-sm ms-2" (click)="nextPage()" [disabled]="currentPage === totalPages"><i class="bi bi-chevron-right"></i></button>
+      <button class="btn btn-outline-secondary btn-sm ms-2" (click)="lastPage()" [disabled]="currentPage === totalPages"><i class="bi bi-chevron-double-right"></i></button>
+    </div>
+  </div>
+</div>

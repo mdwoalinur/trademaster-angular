@@ -1,0 +1,56 @@
+:host {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.product-mini {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.product-mini-thumb {
+  width: 48px;
+  height: 48px;
+  flex: 0 0 48px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid var(--border-color, #e5e7eb);
+  background: var(--card-bg, #ffffff);
+}
+
+.product-mini-compact .product-mini-thumb {
+  width: 40px;
+  height: 40px;
+  flex-basis: 40px;
+  border-radius: 6px;
+}
+
+.product-mini-info {
+  min-width: 0;
+  flex: 1 1 auto;
+  max-width: 100%;
+}
+
+.product-mini-name {
+  color: var(--text-primary, #111827);
+  font-weight: 600;
+  line-height: 1.25;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.product-mini-meta {
+  color: var(--text-muted, #6b7280);
+  font-size: 12px;
+  line-height: 1.25;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

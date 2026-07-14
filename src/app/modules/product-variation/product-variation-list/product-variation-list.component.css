@@ -1,0 +1,164 @@
+:host {
+  display: block;
+  color: var(--tm-text);
+}
+
+.card,
+.table-responsive {
+  background: var(--tm-surface);
+  border-color: var(--tm-border);
+  box-shadow: var(--tm-shadow);
+}
+
+.table {
+  margin-bottom: 0;
+}
+
+.variant-card {
+  overflow: hidden;
+  border: 1px solid var(--tm-border);
+  border-radius: 14px;
+}
+
+.variant-image-banner {
+  position: relative;
+  height: 168px;
+  overflow: hidden;
+  background:
+    linear-gradient(135deg, rgba(240, 253, 244, 0.95), rgba(220, 252, 231, 0.55)),
+    repeating-linear-gradient(135deg, rgba(22, 163, 74, 0.08) 0 1px, transparent 1px 14px);
+}
+
+.variant-image-banner img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.variant-image-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: #047857;
+  font-weight: 900;
+}
+
+.variant-image-placeholder i {
+  font-size: 36px;
+}
+
+.variant-image-banner img + .variant-image-placeholder {
+  display: none;
+}
+
+.variant-image-banner.variation-image-failed .variant-image-placeholder {
+  display: flex;
+}
+
+.variant-status-dot {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #94a3b8;
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.75);
+}
+
+.variant-status-dot.active {
+  background: #16a34a;
+}
+
+.variant-sku-pill {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  max-width: calc(100% - 24px);
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.78);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.variant-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.variant-product-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  max-width: 100%;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: rgba(34, 197, 94, 0.1);
+  color: #047857;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.variant-product-chip span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.variant-title {
+  margin: 0;
+  color: var(--tm-text);
+  font-size: 1.05rem;
+  font-weight: 900;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.variant-price-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.variant-price-row div {
+  padding: 10px;
+  border: 1px solid var(--tm-border);
+  border-radius: 10px;
+  background: rgba(248, 250, 252, 0.78);
+}
+
+.variant-price-row span {
+  display: block;
+  color: var(--tm-muted);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.variant-price-row strong {
+  color: var(--tm-text);
+  font-size: 13px;
+}
+
+.variant-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.variant-actions {
+  display: flex;
+  gap: 8px;
+}

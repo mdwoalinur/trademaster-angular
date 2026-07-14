@@ -1,0 +1,40 @@
+
+package com.trademaster.ims.service;
+
+import com.trademaster.ims.repository.SaleRepository;
+import com.trademaster.ims.repository.PurchaseRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
+
+@Service
+public class TaxReportService {
+
+    @Autowired
+    private SaleRepository saleRepository;
+
+    @Autowired
+    private PurchaseRepository purchaseRepository;
+
+    public Map<String, BigDecimal> getTaxReport(LocalDate startDate, LocalDate endDate) {
+        // Total tax collected from completed sales
+        BigDecimal salesTax = saleRepository.getTotalTaxBetween(startDate.atStartOfDay(), endDate.atTime(23,59,59));
+        if (salesTax == null) salesTax = BigDecimal.ZERO;
+
+        // Total tax paid on purchases (received purchases)
+        BigDecimal purchaseTax = purchaseRepository.getTotalTaxBetween(startDate.atStartOfDay(), endDate.atTime(23,59,59));
+        if (purchaseTax == null) purchaseTax = BigDecimal.ZERO;
+
+        BigDecimal netTax = salesTax.subtract(purchaseTax);
+
+        Map<String, BigDecimal> report = new HashMap<>();
+        report.put("salesTax", salesTax);
+        report.put("purchaseTax", purchaseTax);
+        report.put("netTax", netTax);
+        return report;
+    }
+}

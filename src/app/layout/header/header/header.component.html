@@ -1,0 +1,195 @@
+<header class="header">
+    <div class="header-left">
+        <button class="menu-toggle" (click)="toggleSidebar()" [attr.aria-pressed]="sidebarCollapsed">
+            <i class="bi bi-list"></i>
+        </button>
+    </div>
+
+    <div class="header-center">
+        <div class="search-wrapper global-search" [class.active]="searchOpen || searchTerm" (click)="openSearch($event)">
+            <button type="button" class="search-icon-button" (click)="openSearch($event)" [attr.aria-label]="'COMMON.SEARCH' | translate">
+                <i class="bi bi-search"></i>
+            </button>
+            <input #globalSearchInput type="text" class="search-input" [placeholder]="'COMMON.SEARCH' | translate"
+                   [(ngModel)]="searchTerm" (ngModelChange)="onSearchInput()" (focus)="onSearchFocus()" (keydown)="onSearchKeydown($event)"
+                   autocomplete="off" aria-label="Global search" [readonly]="false" [disabled]="false">
+            <button type="button" class="enter-key" (click)="onSearch()">{{ 'COMMON.ENTER' | translate }}</button>
+            <div class="search-suggestions" *ngIf="hasSearchState()">
+                <div class="search-state" *ngIf="searchLoading">
+                    <span class="spinner-border spinner-border-sm"></span>
+                    <span>{{ 'HEADER.SEARCHING' | translate }}</span>
+                </div>
+                <div class="search-state text-danger" *ngIf="!searchLoading && searchError">
+                    {{ 'HEADER.SEARCH_FAILED' | translate }}
+                </div>
+                <ng-container *ngIf="!searchLoading && !searchError && searchGroups.length">
+                    <div class="suggestion-group" *ngFor="let group of searchGroups">
+                        <div class="suggestion-group-title">{{ group.module }}</div>
+                        <button type="button" class="suggestion-row" *ngFor="let result of group.items"
+                                [class.active]="isSelectedSearchResult(result)" (mousedown)="openSearchResult(result)">
+                            <span class="suggestion-icon"><i class="bi" [ngClass]="result.icon"></i></span>
+                            <span class="suggestion-copy">
+                                <strong>{{ result.title }}</strong>
+                                <small>{{ result.subtitle }}</small>
+                            </span>
+                            <span class="suggestion-meta">
+                                <span class="suggestion-type">{{ result.type }}</span>
+                                <span class="suggestion-status" *ngIf="result.status">{{ result.status | statusLabel }}</span>
+                            </span>
+                        </button>
+                    </div>
+                </ng-container>
+                <div class="search-state" *ngIf="!searchLoading && !searchError && !searchGroups.length">
+                    {{ 'HEADER.NO_SEARCH_RESULTS' | translate }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="header-right">
+        <div class="language-switcher">
+            <i class="bi bi-translate"></i>
+            <select class="language-select" [(ngModel)]="selectedLanguage" (change)="switchLanguage(selectedLanguage)" [attr.aria-label]="'LANGUAGE.SELECT' | translate">
+                <option value="en">{{ 'LANGUAGE.ENGLISH' | translate }}</option>
+                <option value="bn">{{ 'LANGUAGE.BANGLA' | translate }}</option>
+            </select>
+        </div>
+
+        <div class="theme-switcher">
+            <i class="bi bi-palette"></i>
+            <select class="theme-select" [(ngModel)]="selectedTheme" (change)="switchTheme(selectedTheme)" [attr.aria-label]="'THEME.SELECT' | translate">
+                <option value="light">{{ 'THEME.LIGHT' | translate }}</option>
+                <option value="dark">{{ 'THEME.DARK' | translate }}</option>
+                <option value="blue">{{ 'THEME.BLUE' | translate }}</option>
+                <option value="green">{{ 'THEME.GREEN' | translate }}</option>
+                <option value="purple">{{ 'THEME.PURPLE' | translate }}</option>
+            </select>
+        </div>
+
+        <div class="zoom-controls" aria-label="Project zoom controls">
+            <button type="button" class="zoom-btn" (click)="zoomOut()" [disabled]="appZoom <= minZoom" [title]="'COMMON.ZOOM_OUT' | translate">
+                <i class="bi bi-zoom-out"></i>
+            </button>
+            <button type="button" class="zoom-value" (click)="resetZoom()" [title]="'COMMON.RESET_ZOOM' | translate">
+                {{ zoomPercent }}%
+            </button>
+            <button type="button" class="zoom-btn" (click)="zoomIn()" [disabled]="appZoom >= maxZoom" [title]="'COMMON.ZOOM_IN' | translate">
+                <i class="bi bi-zoom-in"></i>
+            </button>
+        </div>
+
+        <div class="mobile-tools">
+            <button type="button" class="nav-icon-btn mobile-tools-toggle" (click)="toggleMobileTools($event)"
+                    [attr.aria-expanded]="showMobileTools" [attr.aria-label]="'PROFILE.THEME_LANGUAGE' | translate">
+                <i class="bi bi-sliders"></i>
+            </button>
+            <div class="mobile-tools-menu" *ngIf="showMobileTools" (click)="$event.stopPropagation()">
+                <label>
+                    <span><i class="bi bi-translate"></i>{{ 'LANGUAGE.SELECT' | translate }}</span>
+                    <select [(ngModel)]="selectedLanguage" (change)="switchLanguage(selectedLanguage)">
+                        <option value="en">{{ 'LANGUAGE.ENGLISH' | translate }}</option>
+                        <option value="bn">{{ 'LANGUAGE.BANGLA' | translate }}</option>
+                    </select>
+                </label>
+                <label>
+                    <span><i class="bi bi-palette"></i>{{ 'THEME.SELECT' | translate }}</span>
+                    <select [(ngModel)]="selectedTheme" (change)="switchTheme(selectedTheme)">
+                        <option value="light">{{ 'THEME.LIGHT' | translate }}</option>
+                        <option value="dark">{{ 'THEME.DARK' | translate }}</option>
+                        <option value="blue">{{ 'THEME.BLUE' | translate }}</option>
+                        <option value="green">{{ 'THEME.GREEN' | translate }}</option>
+                        <option value="purple">{{ 'THEME.PURPLE' | translate }}</option>
+                    </select>
+                </label>
+                <div class="mobile-zoom-row">
+                    <button type="button" (click)="zoomOut()" [disabled]="appZoom <= minZoom" [title]="'COMMON.ZOOM_OUT' | translate"><i class="bi bi-zoom-out"></i></button>
+                    <button type="button" (click)="resetZoom()">{{ zoomPercent }}%</button>
+                    <button type="button" (click)="zoomIn()" [disabled]="appZoom >= maxZoom" [title]="'COMMON.ZOOM_IN' | translate"><i class="bi bi-zoom-in"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <div class="dropdown notification-dropdown">
+            <button type="button" class="nav-icon-btn" (click)="toggleDropdown()" [attr.aria-label]="'HEADER.NOTIFICATIONS' | translate">
+                <i class="bi bi-bell"></i>
+                <span class="badge" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
+            </button>
+
+            <div class="dropdown-menu dropdown-menu-end" *ngIf="showDropdown">
+                <div class="dropdown-header d-flex justify-content-between align-items-center">
+                    <span>{{ 'HEADER.NOTIFICATIONS' | translate }}</span>
+                    <a href="javascript:void(0)" (click)="markAllAsRead(); $event.preventDefault()" class="mark-read">
+                        {{ 'HEADER.MARK_ALL_READ' | translate }}
+                    </a>
+                </div>
+
+                <div class="notification-list">
+                    <a *ngFor="let n of notifications" class="dropdown-item notification-item"
+                       [class.read]="n.isRead" (click)="markAsRead(n); $event.preventDefault()">
+                        <div class="notification-icon" [class.bg-warning]="!n.isRead" [class.bg-light]="n.isRead">
+                            <i class="bi" [ngClass]="n.icon || (n.isRead ? 'bi-check-circle' : 'bi-bell')"></i>
+                        </div>
+                        <div class="notification-content">
+                            <div class="notification-title-row">
+                                <strong>{{ n.title }}</strong>
+                                <span class="notification-priority" *ngIf="n.priority">{{ n.priority }}</span>
+                            </div>
+                            <p>{{ n.message }}</p>
+                            <small>{{ n.timeAgo || (n.createdAt | date:'short') }}</small>
+                        </div>
+                    </a>
+                    <div *ngIf="notifications.length === 0" class="text-center text-muted p-3">
+                        No notifications available
+                    </div>
+                </div>
+
+                <div class="dropdown-footer">
+                    <a routerLink="/notifications">{{ 'HEADER.VIEW_ALL_NOTIFICATIONS' | translate }}</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="dropdown user-dropdown">
+            <button type="button" class="user-menu-btn" data-bs-toggle="dropdown" (click)="openProfileMenu()" [attr.aria-label]="'HEADER.PROFILE' | translate">
+                <img *ngIf="userProfileImage" class="user-avatar" [src]="userProfileImage" alt="Profile photo">
+                <span *ngIf="!userProfileImage" class="user-avatar initials-avatar">{{ userInitials }}</span>
+                <div class="user-info">
+                    <span class="user-name">{{ currentUser }}</span>
+                    <span class="user-role">{{ userRole }}</span>
+                </div>
+                <i class="bi bi-chevron-down ms-2"></i>
+            </button>
+            <div class="dropdown-menu dropdown-menu-end user-profile-menu">
+                <div class="dropdown-item-text user-menu-profile">
+                    <div class="profile-menu-top">
+                        <img *ngIf="userProfileImage" class="profile-menu-avatar" [src]="userProfileImage" alt="Profile photo">
+                        <span *ngIf="!userProfileImage" class="profile-menu-avatar initials-avatar">{{ userInitials }}</span>
+                        <div>
+                            <strong>{{ currentUser }}</strong>
+                            <small *ngIf="userEmail">{{ userEmail }}</small>
+                        </div>
+                    </div>
+                    <div class="profile-menu-badges">
+                        <span class="role-badge">{{ userRole }}</span>
+                        <span class="status-pill" [class.inactive]="!userIsActive">
+                            <i class="bi bi-circle-fill"></i>
+                            {{ userIsActive ? ('PROFILE.ACTIVE' | translate) : ('PROFILE.INACTIVE' | translate) }}
+                        </span>
+                    </div>
+                    <div class="last-login">
+                        <i class="bi bi-clock-history"></i>
+                        <span>{{ 'PROFILE.LAST_LOGIN' | translate }}: {{ userLastLogin ? (userLastLogin | date:'short') : 'N/A' }}</span>
+                    </div>
+                </div>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" routerLink="/profile"><i class="bi bi-person-badge"></i> {{ 'PROFILE.MY_PROFILE' | translate }}</a>
+                <a class="dropdown-item" routerLink="/settings"><i class="bi bi-gear"></i> {{ 'HEADER.SETTINGS' | translate }}</a>
+                <a class="dropdown-item" routerLink="/change-password"><i class="bi bi-shield-lock"></i> {{ 'PROFILE.CHANGE_PASSWORD' | translate }}</a>
+                <a class="dropdown-item" routerLink="/audit-logs"><i class="bi bi-activity"></i> {{ 'PROFILE.ACTIVITY_LOG' | translate }}</a>
+                <a class="dropdown-item" routerLink="/settings" fragment="preferences"><i class="bi bi-palette"></i> {{ 'PROFILE.THEME_LANGUAGE' | translate }}</a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item text-danger" (click)="logout()"><i class="bi bi-box-arrow-right"></i> {{ 'HEADER.LOGOUT' | translate }}</a>
+            </div>
+        </div>
+    </div>
+</header>

@@ -1,0 +1,81 @@
+<div class="container mt-4">
+  <div class="card shadow">
+    <div class="card-header bg-primary text-white">
+      <h3>{{ isEdit ? 'Edit Purchase Order' : 'Create New Purchase Order' }}</h3>
+    </div>
+    <div class="card-body">
+      <div *ngIf="loading" class="text-center py-5"><div class="spinner-border text-primary"></div><p>Loading...</p></div>
+      <form [formGroup]="purchaseForm" (ngSubmit)="onSubmit()" *ngIf="!loading">
+        <h5 class="text-primary"><i class="bi bi-info-circle"></i> Basic Information</h5><hr>
+        <div class="row">
+          <div class="col-md-6"><div class="mb-3"><label class="form-label fw-bold">Supplier <span class="text-danger">*</span></label>
+          <select class="form-select" formControlName="supplierId">
+           <option [value]="null">Select Supplier</option>
+          <option *ngFor="let s of suppliers" [value]="s.supplierId">{{ s.supplierName }}</option>
+          </select>
+            <div class="invalid-feedback" *ngIf="purchaseForm.get('supplierId')?.invalid && purchaseForm.get('supplierId')?.touched">Supplier is required</div>
+          </div></div>
+          <div class="col-md-6"><div class="mb-3"><label class="form-label fw-bold">Warehouse</label>
+            <select class="form-select" formControlName="warehouseId"><option value="">Select Warehouse (Optional)</option><option *ngFor="let w of warehouses" [value]="w.id">{{ w.name }}</option></select>
+          </div></div>
+        </div>
+        <div class="row">
+          <div class="col-md-4"><div class="mb-3"><label class="form-label fw-bold">Purchase Date <span class="text-danger">*</span></label>
+            <input type="date" class="form-control" formControlName="purchaseDate"></div></div>
+          <div class="col-md-4"><div class="mb-3"><label class="form-label fw-bold">Expected Delivery</label>
+            <input type="date" class="form-control" formControlName="expectedDelivery"></div></div>
+          <div class="col-md-4"><div class="mb-3"><label class="form-label fw-bold">Payment Terms</label>
+            <input type="text" class="form-control" formControlName="paymentTerms" placeholder="e.g., Net 30, COD"></div></div>
+        </div>
+
+        <h5 class="text-primary mt-3"><i class="bi bi-list-ul"></i> Purchase Items</h5><hr>
+        <div formArrayName="items">
+          <div *ngFor="let item of items.controls; let i = index" [formGroupName]="i" class="card mb-3">
+            <div class="card-body">
+              <div class="d-flex justify-content-between"><h6>Item #{{i+1}}</h6><button type="button" class="btn btn-sm btn-outline-danger" (click)="removeItem(i)" *ngIf="items.length > 1"><i class="bi bi-trash"></i> Remove</button></div>
+              <div class="row">
+                <div class="col-md-4"><label class="form-label">Product <span class="text-danger">*</span></label>
+                  <select class="form-select" formControlName="productId" (change)="onProductChange(i)"><option [ngValue]="null">Select Product</option><option *ngFor="let p of products" [value]="p.id">{{ p.productName }}</option></select></div>
+                <div class="col-md-2"><label class="form-label">Quantity</label><input type="number" class="form-control" formControlName="quantity" (input)="calculateTotals()" min="1"></div>
+                <div class="col-md-2"><label class="form-label">Unit Price</label><input type="number" step="0.01" class="form-control" formControlName="unitPrice" (input)="calculateTotals()" min="0"></div>
+                <div class="col-md-2"><label class="form-label">Tax</label><input type="number" step="0.01" class="form-control" formControlName="tax" (input)="calculateTotals()" min="0"></div>
+                <div class="col-md-2"><label class="form-label">Discount</label><input type="number" step="0.01" class="form-control" formControlName="discount" (input)="calculateTotals()" min="0"></div>
+              </div>
+              <div class="row">
+                <div class="col-md-8"><label class="form-label">Item Notes</label><textarea class="form-control" formControlName="notes" rows="1" placeholder="Optional notes..."></textarea></div>
+                <div class="col-md-4"><label class="form-label fw-bold">Line Total</label><div class="form-control-plaintext fw-bold text-end">{{ calculateItemTotal(i) | currency }}</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!--  Added Scan Barcode button next to Add Item button -->
+        <div class="d-flex gap-2 align-items-center mb-3">
+          <button type="button" class="btn btn-outline-primary" (click)="openScannerForItem()">
+            <i class="bi bi-upc-scan"></i> Scan Barcode
+          </button>
+          <button type="button" class="btn btn-outline-primary" (click)="addItem()">
+            <i class="bi bi-plus-lg"></i> Add Another Item
+          </button>
+        </div>
+
+        <div class="card bg-light"><div class="card-body"><h6>Purchase Summary</h6>
+          <div class="row"><div class="col-md-3"><div class="d-flex justify-content-between"><span>Subtotal:</span><strong>{{ subtotal | currency }}</strong></div></div>
+          <div class="col-md-3"><div class="d-flex justify-content-between"><span>Total Tax:</span><strong>{{ totalTax | currency }}</strong></div></div>
+          <div class="col-md-3"><div class="d-flex justify-content-between"><span>Total Discount:</span><strong>{{ totalDiscount | currency }}</strong></div></div>
+          <div class="col-md-3"><div class="d-flex justify-content-between border-start ps-3"><span class="fs-5">Grand Total:</span><strong class="fs-5 text-primary">{{ grandTotal | currency }}</strong></div></div></div>
+        </div></div>
+
+        <h5 class="text-primary mt-4"><i class="bi bi-sticky"></i> Additional Information</h5><hr>
+        <div class="mb-3"><label class="form-label">Notes</label><textarea class="form-control" formControlName="notes" rows="3" placeholder="Any additional notes..."></textarea></div>
+        <hr><div class="d-flex justify-content-between">
+          <button type="button" class="btn btn-secondary btn-lg" (click)="cancel()"><i class="bi bi-x-circle"></i> Cancel</button>
+          <button type="submit" class="btn btn-primary btn-lg" [disabled]="purchaseForm.invalid || submitting">
+            <span *ngIf="submitting" class="spinner-border spinner-border-sm me-2"></span><i class="bi bi-check-circle" *ngIf="!submitting"></i>
+            {{ submitting ? 'Saving...' : (isEdit ? 'Update Purchase' : 'Create Purchase') }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

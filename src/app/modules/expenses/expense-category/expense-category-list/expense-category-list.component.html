@@ -1,0 +1,67 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Expense Categories</h2>
+    <button class="btn btn-primary" (click)="addCategory()">
+      <i class="bi bi-plus-circle"></i> Add Category
+    </button>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-5">
+          <input type="text" class="form-control" placeholder="Search by name or code..."
+                 [(ngModel)]="searchTerm" (input)="applyFilter()">
+        </div>
+        <div class="col-md-3">
+          <select class="form-select" [(ngModel)]="filterStatus" (change)="applyFilter()">
+            <option value="ALL">All Status</option>
+            <option value="ACTIVE">Active</option>
+            <option value="INACTIVE">Inactive</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary"></div>
+  </div>
+
+  <div *ngIf="!loading" class="table-responsive">
+    <table class="table table-bordered table-hover">
+      <thead class="theme-table-header">
+        <tr>
+          <th>Code</th>
+          <th>Name</th>
+          <th>Description</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let c of filteredCategories">
+          <td>{{ c.categoryCode }}</td>
+          <td>{{ c.categoryName }}</td>
+          <td>{{ c.description || '-' }}</td>
+          <td>
+            <span class="badge" [class.bg-success]="c.status" [class.bg-secondary]="!c.status">
+              {{ c.status ? 'Active' : 'Inactive' }}
+            </span>
+          </td>
+          <td>
+            <button class="btn btn-sm btn-warning me-1" (click)="editCategory(c.expCategoryId!)">
+              <i class="bi bi-pencil"></i>
+            </button>
+            <button class="btn btn-sm btn-danger" (click)="deleteCategory(c.expCategoryId!)">
+              <i class="bi bi-trash"></i>
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="filteredCategories.length === 0">
+          <td colspan="5" class="text-center py-4">No categories found.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -1,0 +1,83 @@
+<div class="container-fluid mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="page-title">
+      <i class="bi bi-shield-lock-fill me-2"></i> Role Management
+    </h2>
+    <button class="btn btn-primary" (click)="addRole()">
+      <i class="bi bi-plus-circle"></i> Add New Role
+    </button>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-2">Loading roles...</p>
+  </div>
+
+  <!-- Role Table -->
+  <div *ngIf="!loading" class="table-responsive">
+    <table class="table table-hover table-bordered align-middle">
+      <thead class="theme-table-header">
+        <tr>
+          <th>ID</th>
+          <th>Role Name</th>
+          <th>Description</th>
+          <th>Status</th>
+          <th>Created At</th>
+          <th style="width: 100px">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let role of roles">
+          <td>{{ role.roleId }}</td>
+          <td>{{ role.roleName }}</td>
+          <td>{{ role.description || '-' }}</td>
+          <td>
+            <span class="badge" [class]="getStatusBadge(role.status)">
+              {{ role.status ? 'Active' : 'Inactive' }}
+            </span>
+          </td>
+          <td>{{ formatDate(role.createdAt) }}</td>
+          <td>
+            <button class="btn btn-sm btn-outline-primary me-1" (click)="editRole(role.roleId!)" title="Edit">
+              <i class="bi bi-pencil"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-danger" (click)="deleteRole(role.roleId!)" title="Deactivate">
+              <i class="bi bi-trash"></i>
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="roles.length === 0">
+          <td colspan="6" class="text-center py-4 text-muted">
+            No roles found. Click "Add New Role" to create one.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div *ngIf="totalPages > 1" class="d-flex justify-content-between align-items-center mt-4">
+    <div class="text-muted small">
+      Showing {{ (currentPage - 1) * pageSize + 1 }} - 
+      {{ Math.min(currentPage * pageSize, totalElements) }} of {{ totalElements }} roles
+    </div>
+    <div>
+      <button class="btn btn-sm btn-outline-secondary me-2" (click)="firstPage()" [disabled]="currentPage === 1">
+        <i class="bi bi-chevron-double-left"></i>
+      </button>
+      <button class="btn btn-sm btn-outline-secondary me-2" (click)="previousPage()" [disabled]="currentPage === 1">
+        <i class="bi bi-chevron-left"></i>
+      </button>
+      <span class="mx-2">Page {{ currentPage }} of {{ totalPages }}</span>
+      <button class="btn btn-sm btn-outline-secondary ms-2" (click)="nextPage()" [disabled]="currentPage === totalPages">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+      <button class="btn btn-sm btn-outline-secondary ms-2" (click)="lastPage()" [disabled]="currentPage === totalPages">
+        <i class="bi bi-chevron-double-right"></i>
+      </button>
+    </div>
+  </div>
+</div>

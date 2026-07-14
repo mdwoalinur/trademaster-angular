@@ -1,0 +1,66 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Stock Overview</h2>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <input type="text" class="form-control" placeholder="Search by product name..." 
+                 [(ngModel)]="searchTerm">
+        </div>
+        <div class="col-md-3">
+          <select class="form-select" [(ngModel)]="selectedWarehouse">
+            <option value="">All Warehouses</option>
+            <option *ngFor="let w of warehouses" [value]="w.id">{{ w.name }}</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary"></div>
+    <p class="mt-2">Loading stock data...</p>
+  </div>
+
+  <div *ngIf="!loading" class="table-responsive">
+    <table class="table table-bordered table-hover">
+      <thead class="theme-table-header">
+        <tr>
+          <th>Product</th>
+          <th>Warehouse</th>
+          <th>Quantity</th>
+          <th>Reserved</th>
+          <th>Available</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let s of filteredStocks">
+          <td>
+            <app-product-mini
+              [imageUrl]="getProductImageUrl(s.productId)"
+              [productName]="getProductName(s.productId)"
+              [sku]="getProductSku(s.productId)">
+            </app-product-mini>
+          </td>
+          <td>{{ getWarehouseName(s.warehouseId) }}</td>
+          <td>{{ s.quantity }}</td>
+          <td>{{ s.reservedQuantity }}</td>
+          <td>{{ s.availableQuantity }}</td>
+          <td>
+            <span class="badge" [class.bg-danger]="isLowStock(s.quantity, s.productId)" 
+                  [class.bg-success]="!isLowStock(s.quantity, s.productId)">
+              {{ isLowStock(s.quantity, s.productId) ? 'Low Stock' : 'Normal' }}
+            </span>
+          </td>
+        </tr>
+        <tr *ngIf="filteredStocks.length === 0">
+          <td colspan="6" class="text-center py-4">No stock records found.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

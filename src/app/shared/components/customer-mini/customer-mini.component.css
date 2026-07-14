@@ -1,0 +1,55 @@
+.customer-mini {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.customer-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--tm-border, #d9f5e1);
+  background: #f3f7f5;
+  flex: 0 0 44px;
+}
+
+.customer-mini-compact .customer-avatar {
+  width: 40px;
+  height: 40px;
+  flex-basis: 40px;
+}
+
+.customer-avatar-fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #047857;
+  background: #ecfdf5;
+  font-weight: 800;
+}
+
+.customer-info {
+  min-width: 0;
+}
+
+.customer-name {
+  color: var(--tm-text, #111827);
+  font-weight: 700;
+  line-height: 1.25;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.customer-meta {
+  color: var(--tm-muted, #6b7280);
+  font-size: 12px;
+  line-height: 1.25;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

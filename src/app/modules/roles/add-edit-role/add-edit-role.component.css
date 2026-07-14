@@ -1,0 +1,12 @@
+.container {
+  max-width: 600px;
+}
+
+.card {
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.invalid-feedback {
+  font-size: 0.75rem;
+}

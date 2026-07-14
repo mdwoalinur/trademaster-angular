@@ -1,0 +1,165 @@
+<div class="sales-page">
+  <div class="sales-page-header">
+    <h2>Sales</h2>
+    <button class="btn btn-primary sales-add-btn" (click)="addSale()">
+      <i class="bi bi-plus-circle"></i> Add Sale
+    </button>
+  </div>
+
+  <div class="sales-filter-bar">
+    <div class="sales-search-box">
+      <i class="bi bi-search"></i>
+      <input type="text" class="form-control" placeholder="Search by invoice..." [(ngModel)]="searchTerm">
+    </div>
+    <div class="sales-filter-select">
+      <select class="form-select" [(ngModel)]="filterStatus">
+        <option *ngFor="let opt of statusOptions" [value]="opt">{{ opt }}</option>
+      </select>
+    </div>
+    <div class="sales-filter-select">
+      <select class="form-select" [(ngModel)]="filterPayment">
+        <option *ngFor="let opt of paymentOptions" [value]="opt">{{ opt }}</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="sales-summary-grid" *ngIf="!loading">
+    <div class="sales-summary-card total">
+      <div class="summary-icon"><i class="bi bi-bag-check"></i></div>
+      <div>
+        <span>Total Sales</span>
+        <strong>{{ totalSalesCount }}</strong>
+        <small>Current list</small>
+      </div>
+    </div>
+    <div class="sales-summary-card completed">
+      <div class="summary-icon"><i class="bi bi-cart-check"></i></div>
+      <div>
+        <span>Completed Sales</span>
+        <strong>{{ completedSalesCount }}</strong>
+        <small>Current list</small>
+      </div>
+    </div>
+    <div class="sales-summary-card revenue">
+      <div class="summary-icon"><i class="bi bi-currency-exchange"></i></div>
+      <div>
+        <span>Total Revenue</span>
+        <strong>{{ formatCurrency(totalRevenue) }}</strong>
+        <small>Current list</small>
+      </div>
+    </div>
+    <div class="sales-summary-card due">
+      <div class="summary-icon"><i class="bi bi-file-earmark-text"></i></div>
+      <div>
+        <span>Total Due</span>
+        <strong>{{ formatCurrency(totalDue) }}</strong>
+        <small>Current list</small>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary"></div>
+    <p class="mt-2">Loading sales...</p>
+  </div>
+
+  <!-- No Results -->
+  <div *ngIf="!loading && filteredSales.length === 0" class="alert alert-info">
+    No sales found.
+  </div>
+
+  <div class="sales-table-card" *ngIf="!loading && filteredSales.length">
+    <div class="table-responsive sales-table-wrapper">
+      <table class="sales-data-table">
+        <colgroup>
+          <col class="col-invoice">
+          <col class="col-customer">
+          <col class="col-warehouse">
+          <col class="col-date">
+          <col class="col-amount">
+          <col class="col-paid">
+          <col class="col-due">
+          <col class="col-status">
+          <col class="col-payment">
+          <col class="col-actions">
+        </colgroup>
+        <thead>
+          <tr>
+            <th class="col-invoice">Invoice No</th>
+            <th class="col-customer">Customer</th>
+            <th class="col-warehouse">Warehouse</th>
+            <th class="col-date">Sale Date</th>
+            <th class="col-amount">Total Amount</th>
+            <th class="col-paid">Paid</th>
+            <th class="col-due">Due</th>
+            <th class="col-status">Status</th>
+            <th class="col-payment">Payment</th>
+            <th class="col-actions">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let sale of filteredSales">
+            <td class="col-invoice" [title]="sale.invoiceNo">
+              <div class="invoice-cell">
+                <strong>{{ sale.invoiceNo }}</strong>
+              </div>
+            </td>
+            <td class="col-customer" [title]="getCustomerName(sale.customerId)">
+              <app-customer-mini
+                [photoUrl]="getCustomer(sale.customerId)?.photoUrl"
+                [customerName]="getCustomerName(sale.customerId)"
+                [customerCode]="getCustomer(sale.customerId)?.customerCode"
+                [email]="getCustomer(sale.customerId)?.email"
+                [compact]="true">
+              </app-customer-mini>
+            </td>
+            <td class="col-warehouse" [title]="getWarehouseName(sale.warehouseId)">
+              <span class="warehouse-cell cell-ellipsis">{{ getWarehouseName(sale.warehouseId) }}</span>
+            </td>
+            <td class="col-date">
+              <span class="date-cell">{{ formatDate(sale.saleDate) }}</span>
+              <small>{{ formatTime(sale.saleDate) }}</small>
+            </td>
+            <td class="col-amount money strong">{{ formatCurrency(sale.totalAmount) }}</td>
+            <td class="col-paid money paid">{{ formatCurrency(sale.paidAmount) }}</td>
+            <td class="col-due money due">{{ formatCurrency(sale.dueAmount) }}</td>
+            <td class="col-status"><span [class]="getStatusClass(sale.status)">{{ sale.status }}</span></td>
+            <td class="col-payment"><span [class]="getPaymentClass(sale.paymentStatus)">{{ sale.paymentStatus }}</span></td>
+            <td class="col-actions actions-cell">
+              <div class="sale-actions">
+                <button class="action-btn print" (click)="viewSaleInvoice(sale)" title="View Sale"><i class="bi bi-printer"></i></button>
+                <button class="action-btn email" (click)="sendInvoiceEmail(sale)" title="Send Invoice Email"><i class="bi bi-envelope"></i></button>
+                <button class="action-btn edit" (click)="editSale(sale)" title="Edit Sale"><i class="bi bi-pencil"></i></button>
+                <button class="action-btn return" (click)="returnSale(sale.saleId)" title="Create Sales Return"><i class="bi bi-arrow-return-left"></i></button>
+                <button class="action-btn delete" (click)="deleteSale(sale)" title="Delete Sale"><i class="bi bi-trash"></i></button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="sales-table-footer">
+      <span>Showing 1 to {{ filteredSales.length }} of {{ filteredSales.length }} entries</span>
+    </div>
+  </div>
+</div>
+<!-- ==================== INVOICE POPUP MODAL ==================== -->
+<div class="invoice-popup-backdrop" *ngIf="showSaleInvoice" (click)="closeSaleInvoice()">
+  <div class="invoice-popup-content" (click)="$event.stopPropagation()">
+    <!-- Close button -->
+    <button class="btn-close-invoice" (click)="closeSaleInvoice()">✕</button>
+
+    <app-sale-invoice
+      *ngIf="selectedSale"
+      [sale]="selectedSale"
+      [items]="selectedSaleItems"
+      [customerName]="selectedCustomerName"
+      [customerPhotoUrl]="selectedCustomerPhotoUrl"
+      [customerEmail]="selectedCustomerEmail"
+      [customerPhone]="selectedCustomerPhone"
+      [warehouseName]="selectedWarehouseName"
+      (close)="closeSaleInvoice()">
+    </app-sale-invoice>
+  </div>
+</div>

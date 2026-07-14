@@ -1,0 +1,115 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Wastage Records</h2>
+    <button class="btn btn-primary" routerLink="/inventory/wastage/records/add">
+      <i class="bi bi-plus-circle"></i> Add Wastage
+    </button>
+  </div>
+
+  <!-- Enhanced Filter Card -->
+  <div class="card mb-3">
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <input type="text" class="form-control" placeholder="Search by product, batch, reason..." 
+                 [(ngModel)]="searchTerm">
+        </div>
+        <div class="col-md-3">
+          <select class="form-select" [(ngModel)]="selectedWastageType">
+            <option value="">All Types</option>
+            <option *ngFor="let t of wastageTypes" [value]="t">{{ t }}</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <select class="form-select" [(ngModel)]="selectedStatus">
+            <option value="">All Status</option>
+            <option *ngFor="let s of statusOptions" [value]="s">{{ s }}</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <button class="btn btn-outline-secondary w-100" (click)="resetFilters()">
+            <i class="bi bi-eraser"></i> Reset
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary"></div>
+    <p class="mt-2">Loading wastage records...</p>
+  </div>
+
+  <div *ngIf="!loading && filteredRecords.length === 0" class="alert alert-info text-center py-4">
+    <i class="bi bi-inbox" style="font-size: 48px;"></i>
+    <h5 class="mt-2">No wastage records found</h5>
+    <p>Click "Add Wastage" to create a new record.</p>
+  </div>
+
+  <div *ngIf="!loading && filteredRecords.length > 0" class="table-responsive">
+    <table class="table table-bordered table-hover">
+      <thead class="theme-table-header">
+        <tr>
+          <th>#</th>
+          <th>Product</th>
+          <th>Warehouse</th>
+          <th>Type</th>
+          <th>Quantity</th>
+          <th>Date</th>
+          <th>Loss</th>
+          <th>Status</th>
+          <th style="min-width: 140px;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!--  Changed from records to filteredRecords -->
+        <tr *ngFor="let r of filteredRecords; let i = index">
+          <td>{{ i + 1 }}</td>
+          <td>
+            <app-product-mini
+              [imageUrl]="getProductImageUrl(r.productId)"
+              [productName]="getProductName(r.productId)"
+              [sku]="getProductSku(r.productId)">
+            </app-product-mini>
+          </td>
+          <td>{{ getWarehouseName(r.warehouseId) }}</td>
+          <td>
+            <span class="badge" [class]="getWastageTypeBadge(r.wastageType)">
+              {{ r.wastageType }}
+            </span>
+          </td>
+          <td>{{ r.quantity }}</td>
+          <td>{{ formatDate(r.wastageDate) }}</td>
+          <td>{{ r.financialLoss | currency }}</td>
+          <td>
+            <span class="badge" [class]="getStatusBadge(r.status)">{{ r.status }}</span>
+          </td>
+          <td>
+            <button class="btn btn-sm btn-outline-warning me-1" 
+                    [routerLink]="['/inventory/wastage/records/edit', r.wastageId]"
+                    [disabled]="r.status !== 'PENDING'"
+                    title="Edit">
+              <i class="bi bi-pencil"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-success me-1" 
+                    (click)="approveRecord(r.wastageId)" 
+                    [disabled]="r.status !== 'PENDING'"
+                    title="Approve">
+              <i class="bi bi-check-lg"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-danger" 
+                    (click)="deleteRecord(r.wastageId)"
+                    title="Delete">
+              <i class="bi bi-trash"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  
+  <!-- Record count summary -->
+  <div class="text-muted mt-2" *ngIf="!loading && filteredRecords.length > 0">
+    Showing {{ filteredRecords.length }} of {{ records.length }} records
+  </div>
+</div>

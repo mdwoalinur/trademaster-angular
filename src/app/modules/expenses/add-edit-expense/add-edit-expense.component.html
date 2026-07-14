@@ -1,0 +1,182 @@
+<div class="container mt-4">
+  <div class="card shadow">
+    <div class="card-header bg-primary text-white">
+      <h3>{{ isEdit ? 'Edit Expense' : 'Add New Expense' }}</h3>
+    </div>
+    <div class="card-body">
+      <div *ngIf="loading" class="text-center py-5"><div class="spinner-border"></div></div>
+      <form [formGroup]="expenseForm" (ngSubmit)="save()" *ngIf="!loading">
+        <!-- Basic Info -->
+        <div class="row">
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Expense No *</label>
+            <input type="text" class="form-control" formControlName="expenseNo">
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Expense Date *</label>
+            <input type="date" class="form-control" formControlName="expenseDate">
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Vendor</label>
+            <select class="form-select" formControlName="vendorId">
+              <option [ngValue]="null">Select Vendor</option>
+              <option *ngFor="let v of vendors" [ngValue]="v.supplierId">{{ v.supplierName }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-3 mb-3">
+            <label class="form-label">Payment Method *</label>
+            <select class="form-select" formControlName="paymentMethod">
+              <option *ngFor="let m of paymentMethods" [value]="m">{{ m }}</option>
+            </select>
+          </div>
+          <div class="col-md-3 mb-3">
+            <label class="form-label">Payment Status</label>
+            <div class="form-control-plaintext">
+              <span class="badge bg-secondary">Calculated after approved payment posting</span>
+            </div>
+          </div>
+          <div class="col-md-3 mb-3">
+            <label class="form-label">Reference No</label>
+            <input type="text" class="form-control" formControlName="referenceNo">
+          </div>
+          <div class="col-md-3 mb-3">
+            <label class="form-label">Status *</label>
+            <select class="form-select" formControlName="status">
+              <option *ngFor="let s of statuses" [value]="s">{{ s }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Notes</label>
+          <textarea class="form-control" formControlName="notes" rows="2"></textarea>
+        </div>
+
+        <!-- Items Section -->
+        <h5 class="mt-4">Expense Items</h5>
+        <hr>
+        <div formArrayName="items">
+          <div *ngFor="let item of itemsArray.controls; let i = index" [formGroupName]="i" class="card mb-3">
+            <div class="card-body">
+              <div class="d-flex justify-content-between">
+                <h6>Item #{{ i + 1 }}</h6>
+                <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeItem(i)">Remove</button>
+              </div>
+              <div class="row">
+                <div class="col-md-3 mb-2">
+                  <label class="form-label">Category *</label>
+                  <select class="form-select" formControlName="expCategoryId">
+                    <option [ngValue]="null">Select Category</option>
+                    <option *ngFor="let c of categories" [ngValue]="c.expCategoryId">{{ c.categoryName }}</option>
+                  </select>
+                </div>
+                <div class="col-md-3 mb-2">
+                  <label class="form-label">Item Name *</label>
+                  <input type="text" class="form-control" formControlName="itemName">
+                </div>
+                <div class="col-md-2 mb-2">
+                  <label class="form-label">Quantity *</label>
+                  <input type="number" class="form-control" formControlName="quantity" min="1">
+                </div>
+                <div class="col-md-2 mb-2">
+                  <label class="form-label">Unit Price *</label>
+                  <input type="number" step="0.01" class="form-control" formControlName="unitPrice">
+                </div>
+                <div class="col-md-2 mb-2">
+                  <label class="form-label">Discount %</label>
+                  <input type="number" step="0.01" class="form-control" formControlName="discountPercent">
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-2 mb-2">
+                  <label class="form-label">Tax Rate %</label>
+                  <input type="number" step="0.01" class="form-control" formControlName="taxRate">
+                </div>
+                <div class="col-md-4 mb-2">
+                  <label class="form-label">Description</label>
+                  <input type="text" class="form-control" formControlName="description">
+                </div>
+                <div class="col-md-4 mb-2">
+                  <label class="form-label">Notes</label>
+                  <input type="text" class="form-control" formControlName="notes">
+                </div>
+                <div class="col-md-2 mb-2">
+                  <label class="form-label">Line Total</label>
+                  <div class="form-control-plaintext fw-bold">
+                    {{ (item.get('quantity')?.value * item.get('unitPrice')?.value) | currency }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button type="button" class="btn btn-outline-primary mb-3" (click)="addItem()">+ Add Item</button>
+
+        <!-- Totals -->
+        <div class="card bg-light">
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-3"><strong>Subtotal:</strong> {{ expenseForm.get('totalAmount')?.value | currency }}</div>
+              <div class="col-md-3"><strong>Tax:</strong> {{ expenseForm.get('taxAmount')?.value | currency }}</div>
+              <div class="col-md-3">
+                <label>Discount Amount</label>
+                <input type="number" step="0.01" class="form-control form-control-sm" formControlName="discountAmount" (input)="calculateTotals()">
+              </div>
+              <div class="col-md-3"><strong>Grand Total:</strong> {{ expenseForm.get('grandTotal')?.value | currency }}</div>
+            </div>
+          </div>
+        </div>
+
+        
+<div class="card mt-4">
+  <div class="card-header bg-info text-white">Attachments</div>
+  <div class="card-body">
+    <!-- Existing attachments -->
+    <div class="mb-3" *ngIf="attachments.length > 0">
+      <label>Uploaded Receipts:</label>
+      <ul class="list-group">
+        <li *ngFor="let a of attachments" class="list-group-item d-flex justify-content-between align-items-center">
+          <button type="button" class="btn btn-link p-0" (click)="downloadAttachment(a)">
+            {{ a.originalName }}
+          </button>
+          <span class="text-muted small me-2">{{ a.fileSize | number:'1.0-0' }} bytes</span>
+          <button type="button" class="btn btn-sm btn-outline-danger" (click)="deleteAttachment(a.attachmentId!)">
+            <i class="bi bi-trash"></i>
+          </button>
+        </li>
+      </ul>
+    </div>
+
+    <!-- New file selection -->
+    <div class="alert alert-light border" *ngIf="!expenseId">
+      Select receipt files now. They will upload automatically after you save the expense.
+    </div>
+    <div class="mb-2">
+      <input type="file" class="form-control" multiple accept="image/*,.pdf" (change)="onFilesSelected($event)">
+    </div>
+    <div *ngIf="selectedFiles.length > 0">
+      <p>Selected files:</p>
+      <ul class="list-group mb-2">
+        <li *ngFor="let f of selectedFiles; let i = index" class="list-group-item d-flex justify-content-between">
+          {{ f.name }} ({{ f.size }} bytes)
+          <button type="button" class="btn btn-sm btn-outline-secondary" (click)="removeFile(i)">Remove</button>
+        </li>
+      </ul>
+      <button type="button" class="btn btn-primary" (click)="uploadAllAttachments()">
+        <i class="bi bi-cloud-upload"></i> Upload All
+      </button>
+    </div>
+  </div>
+</div>
+
+        <div class="mt-4">
+          <button type="submit" class="btn btn-success" [disabled]="loading">{{ loading ? 'Saving...' : (isEdit ? 'Update' : 'Save') }}</button>
+          <button type="button" class="btn btn-secondary ms-2" (click)="cancel()">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

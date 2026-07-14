@@ -1,0 +1,40 @@
+:host {
+  display: block;
+  color: var(--tm-text);
+}
+
+.card,
+.table-responsive {
+  background: var(--tm-surface);
+  border-color: var(--tm-border);
+  box-shadow: var(--tm-shadow);
+}
+
+.table {
+  margin-bottom: 0;
+}
+
+.customer-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.customer-type-badge {
+  background: rgba(22, 163, 74, 0.12);
+  color: #047857;
+  border: 1px solid rgba(22, 163, 74, 0.2);
+}
+
+.customer-card-profile {
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--tm-border);
+}
+
+.card-text {
+  color: var(--tm-text);
+  font-size: 0.92rem;
+  line-height: 1.7;
+}

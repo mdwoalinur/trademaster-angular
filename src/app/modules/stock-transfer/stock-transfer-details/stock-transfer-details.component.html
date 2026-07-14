@@ -1,0 +1,116 @@
+<div class="container mt-4">
+  <div class="card shadow-sm">
+    <!-- Header -->
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+      <h3 class="mb-0">Stock Transfer Details</h3>
+      <button class="btn btn-light btn-sm" (click)="goBack()">
+        <i class="bi bi-arrow-left"></i> Back to List
+      </button>
+    </div>
+
+    <div class="card-body">
+      <!-- Loading Spinner -->
+      <div *ngIf="loading" class="text-center py-5">
+        <div class="spinner-border text-primary"></div>
+        <p class="mt-2">Loading transfer details...</p>
+      </div>
+
+      <!-- Details Content -->
+      <div *ngIf="!loading && transfer">
+        <!-- Transfer Info Card -->
+        <div class="row mb-4">
+          <div class="col-md-6">
+            <div class="info-group">
+              <label class="text-muted">Transfer No:</label>
+              <div class="fw-bold">{{ transfer.transferNo }}</div>
+            </div>
+            <div class="info-group mt-2">
+              <label class="text-muted">Transfer Date:</label>
+              <div>{{ formatDate(transfer.transferDate) }}</div>
+            </div>
+            <div class="info-group mt-2">
+              <label class="text-muted">Status:</label>
+              <div>
+                <span class="badge" [class]="getStatusBadgeClass(transfer.status)">
+                  {{ transfer.status }}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="info-group">
+              <label class="text-muted">From Warehouse:</label>
+              <div><strong>{{ fromWarehouseName }}</strong> (ID: {{ transfer.fromWarehouseId }})</div>
+            </div>
+            <div class="info-group mt-2">
+              <label class="text-muted">To Warehouse:</label>
+              <div><strong>{{ toWarehouseName }}</strong> (ID: {{ transfer.toWarehouseId }})</div>
+            </div>
+            <div class="info-group mt-2">
+              <label class="text-muted">Reason:</label>
+              <div>{{ transfer.reason || '—' }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Items Table -->
+        <div class="mb-4">
+          <h5 class="section-title">Transfer Items</h5>
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+              <thead class="theme-table-header">
+                <tr>
+                  <th>#</th>
+                  <th>Product</th>
+                  <th>Quantity</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of items; let i = index">
+                  <td>{{ i + 1 }}</td>
+                  <td>
+                    <app-product-mini
+                      [imageUrl]="getProductImageUrl(item.productId)"
+                      [productName]="getProductName(item.productId)"
+                      [sku]="getProductSku(item.productId) || ('ID: ' + item.productId)">
+                    </app-product-mini>
+                  </td>
+                  <td>{{ item.quantity }}</td>
+                </tr>
+                <tr *ngIf="items.length === 0">
+                  <td colspan="3" class="text-center">No items found</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div *ngIf="transfer.notes" class="mb-4">
+          <label class="text-muted">Additional Notes:</label>
+          <p class="bg-light p-2 rounded">{{ transfer.notes }}</p>
+        </div>
+
+        <!-- Action Buttons (only if pending) -->
+        <div *ngIf="canApprove()" class="d-flex gap-2 justify-content-end mt-3">
+          <button class="btn btn-success" (click)="approveTransfer()">
+            <i class="bi bi-check-lg"></i> Approve Transfer
+          </button>
+          <button class="btn btn-warning" (click)="rejectTransfer()">
+            <i class="bi bi-x-lg"></i> Reject
+          </button>
+          <button class="btn btn-danger" (click)="cancelTransfer()">
+            <i class="bi bi-trash"></i> Cancel
+          </button>
+        </div>
+      </div>
+
+      <!-- Not Found -->
+      <div *ngIf="!loading && !transfer" class="text-center py-5">
+        <i class="bi bi-exclamation-triangle" style="font-size: 48px;"></i>
+        <p class="mt-2">Transfer not found</p>
+        <button class="btn btn-primary" (click)="goBack()">Go to List</button>
+      </div>
+    </div>
+  </div>
+</div>

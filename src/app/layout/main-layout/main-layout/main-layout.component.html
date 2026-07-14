@@ -1,0 +1,11 @@
+<div class="app-layout">
+  <app-sidebar></app-sidebar>
+  <button type="button" class="sidebar-backdrop" aria-label="Close navigation" (click)="closeMobileSidebar()"></button>
+  <div class="main-content">
+    <app-header></app-header>
+    <div class="page-content">
+      <router-outlet></router-outlet>
+    </div>
+    <app-footer></app-footer>
+  </div>
+</div>

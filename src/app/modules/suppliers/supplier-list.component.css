@@ -1,0 +1,153 @@
+:host {
+  display: block;
+  color: var(--tm-text);
+}
+
+.card,
+.table-responsive {
+  background: var(--tm-surface);
+  border-color: var(--tm-border);
+  box-shadow: var(--tm-shadow);
+}
+
+.table {
+  margin-bottom: 0;
+}
+
+.supplier-card {
+  border: 1px solid var(--tm-border);
+  border-radius: 12px;
+}
+
+.supplier-card-head {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: start;
+}
+
+.supplier-logo-box {
+  position: relative;
+  width: 58px;
+  height: 58px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid #d9f5e1;
+  background: #f3f7f5;
+  flex-shrink: 0;
+}
+
+.supplier-logo-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.supplier-logo-fallback {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #047857;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.supplier-logo-fallback i {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.supplier-logo-box.logo-fallback-visible .supplier-logo-fallback {
+  display: flex;
+}
+
+.supplier-head-copy {
+  min-width: 0;
+}
+
+.supplier-code-badge {
+  display: inline-block;
+  margin-bottom: 5px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(22, 163, 74, 0.1);
+  color: #047857;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.supplier-head-copy .card-title {
+  margin: 0;
+  color: var(--tm-text);
+  font-size: 1rem;
+  font-weight: 800;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.supplier-head-copy small {
+  color: var(--tm-muted);
+}
+
+.supplier-status {
+  background: #94a3b8;
+}
+
+.supplier-status.active {
+  background: #16a34a;
+}
+
+.supplier-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.supplier-info-grid div {
+  min-width: 0;
+  padding: 9px 10px;
+  border-radius: 10px;
+  background: rgba(248, 250, 252, 0.78);
+  border: 1px solid var(--tm-border);
+}
+
+.supplier-info-grid span {
+  display: block;
+  color: var(--tm-muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.supplier-info-grid strong {
+  display: block;
+  color: var(--tm-text);
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.supplier-address {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+  color: var(--tm-muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.supplier-address i {
+  color: #16a34a;
+}
+
+.supplier-card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}

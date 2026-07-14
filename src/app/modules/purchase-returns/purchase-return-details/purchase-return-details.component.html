@@ -1,0 +1,135 @@
+<div class="container mt-4 purchase-return-details">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <h2><i class="bi bi-arrow-counterclockwise"></i> Purchase Return Details</h2>
+      <p class="text-muted mb-0" *ngIf="purchaseReturn">{{ purchaseReturn.returnNo }}</p>
+    </div>
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-secondary" (click)="back()">Back</button>
+      <button *ngIf="canModify()" class="btn btn-outline-primary" (click)="edit()">Edit</button>
+      <button *ngIf="canModify()" class="btn btn-success" (click)="confirm()" [disabled]="confirming">
+        <span *ngIf="confirming" class="spinner-border spinner-border-sm me-1"></span>
+        Confirm Return
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary"></div>
+  </div>
+
+  <ng-container *ngIf="!loading && purchaseReturn">
+    <div class="row g-3 mb-3">
+      <div class="col-lg-8">
+        <div class="card h-100">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+              <div>
+                <h5 class="mb-1">Return Information</h5>
+                <small class="text-muted">Original Purchase: {{ purchaseReturn.originalPurchaseNo }}</small>
+              </div>
+              <span class="badge" [ngClass]="badgeClass(purchaseReturn.status)">{{ purchaseReturn.status }}</span>
+            </div>
+            <div class="info-grid">
+              <div>
+                <span>Supplier</span>
+                <strong>{{ purchaseReturn.supplierName || 'N/A' }}</strong>
+              </div>
+              <div>
+                <span>Warehouse</span>
+                <strong>{{ purchaseReturn.warehouseName || 'N/A' }}</strong>
+              </div>
+              <div>
+                <span>Return Date</span>
+                <strong>{{ formatDate(purchaseReturn.returnDate) }}</strong>
+              </div>
+              <div>
+                <span>Reason</span>
+                <strong>{{ purchaseReturn.reason }}</strong>
+              </div>
+            </div>
+            <div *ngIf="purchaseReturn.notes" class="notes mt-3">{{ purchaseReturn.notes }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-4">
+        <div class="card totals-card h-100">
+          <div class="card-body">
+            <div><span>Subtotal</span><strong>{{ formatCurrency(purchaseReturn.subtotal) }}</strong></div>
+            <div><span>Tax</span><strong>{{ formatCurrency(purchaseReturn.taxAmount) }}</strong></div>
+            <div><span>Discount</span><strong>{{ formatCurrency(purchaseReturn.discountAmount) }}</strong></div>
+            <div class="grand"><span>Total Return</span><strong>{{ formatCurrency(purchaseReturn.totalAmount) }}</strong></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mb-3">
+      <div class="card-header"><strong>Returned Items</strong></div>
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead class="theme-table-header">
+            <tr>
+              <th>Product</th>
+              <th>Qty</th>
+              <th>Unit Price</th>
+              <th>Tax</th>
+              <th>Discount</th>
+              <th>Total</th>
+              <th>Reason</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of purchaseReturn.items">
+              <td>
+                <app-product-mini
+                  [imageUrl]="item.imageUrl"
+                  [productName]="item.productName || ('Product #' + item.productId)"
+                  [sku]="item.sku">
+                </app-product-mini>
+              </td>
+              <td>{{ item.quantity }}</td>
+              <td>{{ formatCurrency(item.unitPrice) }}</td>
+              <td>{{ formatCurrency(item.taxAmount) }}</td>
+              <td>{{ formatCurrency(item.discountAmount) }}</td>
+              <td>{{ formatCurrency(item.totalAmount) }}</td>
+              <td>{{ item.reason || '-' }}</td>
+            </tr>
+            <tr *ngIf="!purchaseReturn.items?.length">
+              <td colspan="7" class="text-center py-4">No items found.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" *ngIf="purchaseReturn.stockMovements?.length">
+      <div class="card-header"><strong>Stock Movements</strong></div>
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead class="theme-table-header">
+            <tr>
+              <th>Product ID</th>
+              <th>Warehouse ID</th>
+              <th>Qty</th>
+              <th>Previous Stock</th>
+              <th>New Stock</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let movement of purchaseReturn.stockMovements">
+              <td>{{ movement.productId }}</td>
+              <td>{{ movement.warehouseId }}</td>
+              <td>{{ movement.quantity }}</td>
+              <td>{{ movement.previousStock }}</td>
+              <td>{{ movement.newStock }}</td>
+              <td>{{ movement.notes || '-' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </ng-container>
+</div>

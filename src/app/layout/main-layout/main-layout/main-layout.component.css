@@ -1,0 +1,121 @@
+/* main-layout.component.css */
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  min-width: 0;
+}
+
+/* Sidebar – fixed width */
+app-sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  background: var(--tm-sidebar-bg);
+  color: var(--tm-sidebar-text);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  transition: width 0.3s ease;
+}
+
+:host-context(.sidebar-collapsed) app-sidebar {
+  width: 72px;
+}
+
+/* Main content – takes remaining space */
+.main-content {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--tm-bg);
+  min-height: 100vh;
+  width: calc(100% - 260px);
+}
+
+:host-context(.sidebar-collapsed) .main-content {
+  width: calc(100% - 72px);
+}
+
+/* Page content – where router-outlet renders */
+.page-content {
+  flex: 1;
+  min-width: 0;
+  max-width: 100%;
+  padding: 1rem;
+  box-sizing: border-box;
+  overflow-x: visible;
+}
+
+/* Header and footer styles – adjust as needed */
+app-header {
+  display: block;
+  flex: 0 0 70px;
+  height: 70px;
+  background: var(--tm-header-bg);
+  border-bottom: 1px solid var(--tm-border);
+  padding: 0;
+}
+
+app-footer {
+  background: var(--tm-surface);
+  border-top: 1px solid var(--tm-border);
+  padding: 1rem;
+  text-align: center;
+}
+
+/* Mobile/tablet navigation becomes an off-canvas drawer. */
+.sidebar-backdrop {
+  display: none;
+}
+
+@media (max-width: 900.98px) {
+  .app-layout {
+    display: block;
+    width: auto;
+    max-width: 100%;
+  }
+
+  app-sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: 0;
+    height: 100dvh;
+    z-index: 1100;
+    overflow: visible;
+  }
+
+  .main-content,
+  :host-context(.sidebar-collapsed) .main-content {
+    width: auto;
+    max-width: 100%;
+  }
+
+  app-header {
+    flex-basis: 60px;
+    height: 60px;
+  }
+
+  .page-content {
+    padding: clamp(.65rem, 2.5vw, 1rem);
+  }
+
+  .sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1090;
+    border: 0;
+    background: rgba(2, 12, 8, .48);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .2s ease, visibility .2s ease;
+  }
+
+  :host-context(.mobile-sidebar-open) .sidebar-backdrop {
+    display: block;
+    opacity: 1;
+    visibility: visible;
+  }
+}

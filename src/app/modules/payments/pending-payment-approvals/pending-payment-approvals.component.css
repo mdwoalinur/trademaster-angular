@@ -1,0 +1,76 @@
+.pending-approvals-page {
+  color: var(--tm-text);
+  padding: 24px;
+}
+
+.page-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.page-title-row h2 {
+  margin: 0;
+  font-weight: 700;
+}
+
+.page-title-row p {
+  margin: 6px 0 0;
+  color: var(--tm-text-muted);
+}
+
+.summary-strip {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.summary-strip > div,
+.approvals-table-wrap {
+  background: var(--tm-surface);
+  border: 1px solid var(--tm-border);
+  border-radius: 8px;
+  box-shadow: var(--tm-shadow);
+}
+
+.summary-strip > div {
+  padding: 16px;
+}
+
+.summary-strip span {
+  display: block;
+  color: var(--tm-text-muted);
+  font-size: 13px;
+}
+
+.summary-strip strong {
+  display: block;
+  margin-top: 6px;
+  font-size: 22px;
+}
+
+.approvals-table-wrap {
+  overflow-x: auto;
+}
+
+.table {
+  margin-bottom: 0;
+}
+
+@media (max-width: 768px) {
+  .pending-approvals-page {
+    padding: 16px;
+  }
+
+  .page-title-row,
+  .summary-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .page-title-row {
+    flex-direction: column;
+  }
+}

@@ -1,0 +1,9 @@
+.purchase-return-page .card {
+  background: var(--tm-surface);
+  border-color: var(--tm-border);
+  box-shadow: var(--tm-shadow);
+}
+
+.purchase-return-page .table {
+  color: var(--tm-text);
+}

@@ -1,0 +1,152 @@
+<div class="financial-accounts-page">
+  <div class="page-title-row">
+    <div>
+      <h2>Financial Accounts</h2>
+      <p>Manage cash, bank, mobile banking, and clearing accounts used for approved payments.</p>
+    </div>
+    <button type="button" class="btn btn-success" (click)="addAccount()">
+      <i class="bi bi-plus-circle"></i> Add Account
+    </button>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-body">
+      <div class="row g-3 align-items-end">
+        <div class="col-md-3">
+          <label class="form-label">Status</label>
+          <select class="form-select" [(ngModel)]="selectedStatus" (change)="loadAccounts()">
+            <option value="">All Status</option>
+            <option *ngFor="let status of statusOptions" [value]="status">{{ status }}</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <button type="button" class="btn btn-outline-secondary w-100" (click)="loadAccounts()">
+            <i class="bi bi-arrow-clockwise"></i> Refresh
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-success"></div>
+  </div>
+
+  <div *ngIf="!loading" class="table-responsive account-table-wrap">
+    <table class="table table-hover align-middle">
+      <thead class="theme-table-header">
+        <tr>
+          <th>Code</th>
+          <th>Account</th>
+          <th>Type</th>
+          <th>Bank / Provider</th>
+          <th class="text-end">Opening</th>
+          <th class="text-end">Current Balance</th>
+          <th>Status</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let account of accounts">
+          <td class="fw-semibold">{{ account.accountCode }}</td>
+          <td>
+            <div class="fw-semibold">{{ account.accountName }}</div>
+            <small class="text-muted">{{ account.accountNumber || 'No account number' }}</small>
+          </td>
+          <td>{{ getTypeLabel(account.accountType) }}</td>
+          <td>{{ account.bankName || account.mobileProvider || account.branchName || '-' }}</td>
+          <td class="text-end">{{ formatCurrency(account.openingBalance) }}</td>
+          <td class="text-end fw-semibold">{{ formatCurrency(account.currentBalance) }}</td>
+          <td><span class="badge" [class]="getStatusBadge(account.status)">{{ account.status || '-' }}</span></td>
+          <td class="text-end">
+            <button type="button" class="btn btn-sm btn-outline-primary me-1" (click)="editAccount(account)" title="Edit">
+              <i class="bi bi-pencil"></i>
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-success me-1" (click)="viewStatement(account)" title="Statement">
+              <i class="bi bi-journal-text"></i>
+            </button>
+            <div class="btn-group me-1">
+              <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                Status
+              </button>
+              <ul class="dropdown-menu">
+                <li *ngFor="let status of statusOptions">
+                  <button type="button" class="dropdown-item" (click)="changeStatus(account, status)">{{ status }}</button>
+                </li>
+              </ul>
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-danger" (click)="deleteAccount(account)" title="Deactivate">
+              <i class="bi bi-trash"></i>
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="accounts.length === 0">
+          <td colspan="8" class="text-center py-4 text-muted">No financial accounts found.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="selectedAccount" class="card statement-card mt-4">
+    <div class="card-header d-flex justify-content-between align-items-start gap-3">
+      <div>
+        <h5 class="mb-1">Account Statement</h5>
+        <div class="text-muted">{{ selectedAccount.accountCode }} - {{ selectedAccount.accountName }}</div>
+      </div>
+      <button type="button" class="btn btn-sm btn-outline-secondary" (click)="closeStatement()">Close</button>
+    </div>
+    <div class="card-body">
+      <div class="row g-3 align-items-end mb-3">
+        <div class="col-md-3">
+          <label class="form-label">Start Date</label>
+          <input type="date" class="form-control" [(ngModel)]="statementStartDate">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">End Date</label>
+          <input type="date" class="form-control" [(ngModel)]="statementEndDate">
+        </div>
+        <div class="col-md-2">
+          <button type="button" class="btn btn-outline-success w-100" (click)="viewStatement(selectedAccount)">
+            Filter
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="statementLoading" class="text-center py-4">
+        <div class="spinner-border text-success"></div>
+      </div>
+
+      <div *ngIf="!statementLoading" class="table-responsive">
+        <table class="table table-sm table-hover align-middle mb-0">
+          <thead class="theme-table-header">
+            <tr>
+              <th>Date</th>
+              <th>Voucher</th>
+              <th>Description</th>
+              <th>Direction</th>
+              <th class="text-end">Debit</th>
+              <th class="text-end">Credit</th>
+              <th class="text-end">Balance</th>
+              <th>Reference</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let entry of statementEntries">
+              <td>{{ formatDate(entry.postedAt) }}</td>
+              <td>{{ entry.voucherNo || '-' }}</td>
+              <td>{{ entry.description || entry.entryType }}</td>
+              <td>{{ entry.direction }}</td>
+              <td class="text-end">{{ formatCurrency(entry.debitAmount) }}</td>
+              <td class="text-end">{{ formatCurrency(entry.creditAmount) }}</td>
+              <td class="text-end fw-semibold">{{ formatCurrency(entry.balanceAfter) }}</td>
+              <td>{{ entry.referenceType || '-' }} {{ entry.referenceId || '' }}</td>
+            </tr>
+            <tr *ngIf="statementEntries.length === 0">
+              <td colspan="8" class="text-center text-muted py-3">No ledger entries found for this account.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

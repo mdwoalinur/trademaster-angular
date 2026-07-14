@@ -1,0 +1,157 @@
+<div class="tm-auth-page" [class.tm-recovery-page]="mode !== 'login'">
+  <ng-container *ngIf="mode === 'login'; else recoveryFlow">
+    <main class="tm-auth-form-panel">
+      <div class="tm-login-card">
+        <header class="tm-login-card-header">
+          <img class="tm-login-card-logo" src="assets/images/icon.png" alt="TradeMaster Logo">
+          <h2>Trade<span>Master</span></h2>
+          <p>{{ 'LOGIN.APP_SUBTITLE' | translate }}</p>
+        </header>
+
+        <div class="tm-secure-label">
+          <span></span>
+          <strong><i class="bi bi-shield-check"></i> {{ 'LOGIN.SECURE_ACCESS' | translate }}</strong>
+          <span></span>
+        </div>
+        <p class="tm-login-subtitle">{{ 'LOGIN.SIGN_IN_SUBTITLE' | translate }}</p>
+
+        <form class="tm-login-form" (ngSubmit)="onSubmit()">
+          <div class="tm-auth-input-wrap">
+            <i class="bi bi-person"></i>
+            <input class="tm-auth-input" type="text" [placeholder]="'LOGIN.USERNAME_OR_EMAIL' | translate" [(ngModel)]="username" name="username" required autocomplete="username">
+          </div>
+
+          <div class="tm-auth-input-wrap">
+            <i class="bi bi-lock"></i>
+            <input class="tm-auth-input" [type]="showPassword ? 'text' : 'password'" [placeholder]="'LOGIN.PASSWORD' | translate" [(ngModel)]="password" name="password" required autocomplete="current-password">
+            <button class="tm-password-toggle" type="button" (click)="showPassword = !showPassword" [attr.aria-label]="'LOGIN.TOGGLE_PASSWORD' | translate">
+              <i class="bi" [ngClass]="showPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
+            </button>
+          </div>
+
+          <div class="tm-auth-options-row">
+            <label><input type="checkbox" [(ngModel)]="rememberMe" name="rememberMe"> {{ 'LOGIN.REMEMBER_ME' | translate }}</label>
+            <button type="button" (click)="goRecoveryMode('request')">{{ 'LOGIN.FORGOT_PASSWORD' | translate }}</button>
+          </div>
+
+          <button class="tm-sign-in-btn" type="submit" [disabled]="loading">
+            <i class="bi bi-lock-fill" *ngIf="!loading"></i>
+            <span *ngIf="loading" class="spinner-border spinner-border-sm"></span>
+            {{ loading ? ('LOGIN.SIGNING_IN' | translate) : ('LOGIN.SIGN_IN' | translate) }}
+          </button>
+        </form>
+
+        <div class="tm-authorized-label">
+          <span></span>
+          <strong><i class="bi bi-shield-check"></i> {{ 'LOGIN.AUTHORIZED_ONLY' | translate }}</strong>
+          <span></span>
+        </div>
+      </div>
+    </main>
+  </ng-container>
+
+  <ng-template #recoveryFlow>
+    <section class="tm-recovery-layout">
+      <aside class="tm-recovery-stepper">
+        <div class="tm-recovery-logo">
+          <img src="assets/images/icon.png" alt="TradeMaster Logo">
+          <strong>Trade<span>Master</span></strong>
+        </div>
+
+        <div class="tm-recovery-step" [class.active]="currentStep === 1" [class.complete]="isStepComplete(1)">
+          <span><i *ngIf="isStepComplete(1)" class="bi bi-check"></i><b *ngIf="!isStepComplete(1)">1</b></span>
+          <div><strong>{{ 'LOGIN.REQUEST_CODE' | translate }}</strong><small>{{ 'LOGIN.REQUEST_CODE_NOTE' | translate }}</small></div>
+        </div>
+        <div class="tm-recovery-step" [class.active]="currentStep === 2" [class.complete]="isStepComplete(2)">
+          <span><i *ngIf="isStepComplete(2)" class="bi bi-check"></i><b *ngIf="!isStepComplete(2)">2</b></span>
+          <div><strong>{{ 'LOGIN.VERIFY_CODE' | translate }}</strong><small>{{ 'LOGIN.VERIFY_CODE_NOTE' | translate }}</small></div>
+        </div>
+        <div class="tm-recovery-step" [class.active]="currentStep === 3" [class.complete]="isStepComplete(3)">
+          <span><i *ngIf="isStepComplete(3)" class="bi bi-check"></i><b *ngIf="!isStepComplete(3)">3</b></span>
+          <div><strong>{{ 'LOGIN.RESET_PASSWORD' | translate }}</strong><small>{{ 'LOGIN.RESET_PASSWORD_NOTE' | translate }}</small></div>
+        </div>
+      </aside>
+
+      <main class="tm-recovery-content">
+        <div class="tm-recovery-card" *ngIf="mode === 'request'">
+          <section class="tm-recovery-copy">
+            <h2>{{ 'LOGIN.FORGOT_PASSWORD_TITLE' | translate }}</h2>
+            <p>{{ 'LOGIN.FORGOT_PASSWORD_DESC' | translate }}</p>
+            <label>{{ 'LOGIN.EMAIL_OR_USERNAME' | translate }}</label>
+            <div class="tm-auth-input-wrap">
+              <i class="bi bi-envelope"></i>
+              <input class="tm-auth-input" type="text" [(ngModel)]="emailOrUsername" name="emailOrUsername" [placeholder]="'LOGIN.EMAIL_OR_USERNAME_PLACEHOLDER' | translate">
+            </div>
+            <div class="tm-recovery-note">{{ 'LOGIN.SEND_CODE_NOTE' | translate }}</div>
+            <button class="tm-recovery-primary-btn" type="button" (click)="requestOtp()" [disabled]="recoveryLoading">
+              {{ recoveryLoading ? ('LOGIN.SENDING_CODE' | translate) : ('LOGIN.SEND_VERIFICATION_CODE' | translate) }}
+            </button>
+            <button class="tm-back-signin" type="button" (click)="backToSignIn()"><i class="bi bi-arrow-left"></i> {{ 'LOGIN.BACK_TO_SIGN_IN' | translate }}</button>
+          </section>
+          <aside class="tm-recovery-illustration"><i class="bi bi-envelope-paper"></i><span><i class="bi bi-lock-fill"></i></span></aside>
+        </div>
+
+        <div class="tm-recovery-card" *ngIf="mode === 'verify'">
+          <section class="tm-recovery-copy">
+            <h2>{{ 'LOGIN.VERIFY_EMAIL_TITLE' | translate }}</h2>
+            <p>{{ 'LOGIN.VERIFY_EMAIL_DESC' | translate }}</p>
+            <small class="tm-masked-email" *ngIf="maskedEmail">{{ maskedEmail }}</small>
+            <label>{{ 'LOGIN.VERIFICATION_CODE' | translate }}</label>
+            <div class="tm-otp-input-group" (paste)="onOtpPaste($event)">
+              <input #otpInput *ngFor="let digit of otpDigits; let i = index" class="tm-otp-input" maxlength="1" inputmode="numeric" [ngModel]="otpDigits[i]" [name]="'otp' + i" (input)="onOtpInput($event, i)" (keydown)="onOtpKeydown($event, i)">
+            </div>
+            <div class="tm-resend-row">
+              <span>{{ 'LOGIN.DID_NOT_RECEIVE' | translate }}</span>
+              <button type="button" (click)="resendOtp()" [disabled]="resendSeconds > 0 || recoveryLoading">
+                {{ resendSeconds > 0 ? ('LOGIN.RESEND_CODE_TIMER' | translate:{ seconds: (resendSeconds < 10 ? '0' + resendSeconds : resendSeconds) }) : ('LOGIN.RESEND_CODE' | translate) }}
+              </button>
+            </div>
+            <button class="tm-recovery-primary-btn" type="button" (click)="verifyOtp()" [disabled]="recoveryLoading">
+              {{ recoveryLoading ? ('LOGIN.VERIFYING' | translate) : ('LOGIN.VERIFY_CODE' | translate) }}
+            </button>
+            <button class="tm-back-signin" type="button" (click)="backToSignIn()"><i class="bi bi-arrow-left"></i> {{ 'LOGIN.BACK_TO_SIGN_IN' | translate }}</button>
+          </section>
+          <aside class="tm-recovery-illustration shield"><i class="bi bi-shield-check"></i></aside>
+        </div>
+
+        <div class="tm-recovery-card" *ngIf="mode === 'reset'">
+          <section class="tm-recovery-copy">
+            <h2>{{ 'LOGIN.CREATE_NEW_PASSWORD' | translate }}</h2>
+            <p>{{ 'LOGIN.CREATE_NEW_PASSWORD_DESC' | translate }}</p>
+            <label>{{ 'LOGIN.NEW_PASSWORD' | translate }}</label>
+            <div class="tm-auth-input-wrap">
+              <i class="bi bi-lock"></i>
+              <input class="tm-auth-input" [type]="showNewPassword ? 'text' : 'password'" [(ngModel)]="newPassword" name="newPassword">
+              <button class="tm-password-toggle" type="button" (click)="showNewPassword = !showNewPassword"><i class="bi" [ngClass]="showNewPassword ? 'bi-eye-slash' : 'bi-eye'"></i></button>
+            </div>
+            <div class="tm-password-strength" [ngClass]="passwordStrengthClass"><span></span><span></span><span></span><strong>{{ ('LOGIN.' + passwordStrength.toUpperCase()) | translate }}</strong></div>
+            <label>{{ 'LOGIN.CONFIRM_PASSWORD' | translate }}</label>
+            <div class="tm-auth-input-wrap">
+              <i class="bi bi-lock"></i>
+              <input class="tm-auth-input" [type]="showConfirmPassword ? 'text' : 'password'" [(ngModel)]="confirmPassword" name="confirmPassword">
+              <button class="tm-password-toggle" type="button" (click)="showConfirmPassword = !showConfirmPassword"><i class="bi" [ngClass]="showConfirmPassword ? 'bi-eye-slash' : 'bi-eye'"></i></button>
+            </div>
+            <div class="tm-password-requirements">
+              <span *ngFor="let item of passwordRequirements" [class.met]="item.met"><i class="bi" [ngClass]="item.met ? 'bi-check' : 'bi-dot'"></i>{{ item.label }}</span>
+              <span [class.met]="newPassword && newPassword === confirmPassword"><i class="bi" [ngClass]="newPassword && newPassword === confirmPassword ? 'bi-check' : 'bi-dot'"></i>{{ 'LOGIN.PASSWORDS_MATCH' | translate }}</span>
+            </div>
+            <button class="tm-recovery-primary-btn" type="button" (click)="resetPassword()" [disabled]="recoveryLoading || !canResetPassword()">
+              {{ recoveryLoading ? ('LOGIN.RESETTING_PASSWORD' | translate) : ('LOGIN.RESET_PASSWORD' | translate) }}
+            </button>
+            <button class="tm-back-signin" type="button" (click)="backToSignIn()"><i class="bi bi-arrow-left"></i> {{ 'LOGIN.BACK_TO_SIGN_IN' | translate }}</button>
+          </section>
+          <aside class="tm-recovery-illustration lock"><i class="bi bi-lock-fill"></i><span><i class="bi bi-check"></i></span></aside>
+        </div>
+
+        <div class="tm-reset-success-card" *ngIf="mode === 'success'">
+          <div class="tm-success-icon"><i class="bi bi-check-lg"></i></div>
+          <div>
+            <h2>{{ 'LOGIN.PASSWORD_RESET_SUCCESSFUL' | translate }}</h2>
+            <p>{{ 'LOGIN.PASSWORD_RESET_SUCCESS_DESC' | translate }}</p>
+            <button type="button" (click)="backToSignIn()">{{ 'LOGIN.GO_TO_SIGN_IN' | translate }} <i class="bi bi-arrow-right"></i></button>
+          </div>
+        </div>
+      </main>
+    </section>
+  </ng-template>
+</div>

@@ -1,0 +1,54 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Low Stock Alerts</h2>
+    <button class="btn btn-primary" (click)="generateAlerts()">
+      <i class="bi bi-arrow-repeat"></i> Generate Alerts
+    </button>
+  </div>
+
+  <div *ngIf="loading" class="text-center py-5"><div class="spinner-border text-primary"></div></div>
+
+  <div *ngIf="!loading" class="table-responsive">
+    <table class="table table-bordered table-hover">
+      <thead class="theme-table-header">
+        <tr>
+          <th>Product</th>
+          <th>Warehouse</th>
+          <th>Current Stock</th>
+          <th>Reorder Level</th>
+          <th>Alert Sent</th>
+          <th>Sent At</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let a of alerts">
+          <td>
+            <app-product-mini
+              [imageUrl]="getProductImageUrl(a.productId)"
+              [productName]="getProductName(a.productId)"
+              [sku]="getProductSku(a.productId)">
+            </app-product-mini>
+          </td>
+          <td>{{ getWarehouseName(a.warehouseId) }}</td>
+          <td>{{ a.currentQuantity }}</td>
+          <td>{{ a.reorderLevel }}</td>
+          <td>
+            <span class="badge" [class.bg-success]="a.alertSent" [class.bg-danger]="!a.alertSent">
+              {{ a.alertSent ? 'Sent' : 'Pending' }}
+            </span>
+        </td>
+          <td>{{ formatDate(a.sentAt) }}</td>
+          <td>
+            <button class="btn btn-sm btn-success" (click)="markAsSent(a.alertId)" [disabled]="a.alertSent">
+              <i class="bi bi-envelope"></i> Mark Sent
+            </button>
+        </td>
+         </tr>
+        <tr *ngIf="alerts.length === 0">
+          <td colspan="7" class="text-center py-4">No low stock alerts.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

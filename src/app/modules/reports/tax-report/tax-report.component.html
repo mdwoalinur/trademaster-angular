@@ -1,0 +1,217 @@
+<div class="tax-compliance-page">
+  <section class="tax-command-header">
+    <div>
+      <div class="tax-eyebrow"><i class="bi bi-shield-check"></i> VAT Filing Dashboard</div>
+      <h2>Tax Report (GST / VAT)</h2>
+      <p>Output VAT, Input VAT and Net Payable Summary</p>
+    </div>
+    <div class="tax-header-meta">
+      <span class="date-badge"><i class="bi bi-calendar3"></i> {{ startDate }} to {{ endDate }}</span>
+      <span class="status-badge" [class.payable]="netTaxPayable() > 0" [class.refundable]="netTaxPayable() < 0" [class.clear]="netTaxPayable() === 0">
+        {{ reportStatusBadge() }}
+      </span>
+      <div class="tax-actions">
+        <button class="btn btn-outline-primary" (click)="printReport()" [disabled]="!report">
+          <i class="bi bi-printer"></i> Print Report
+        </button>
+        <button class="btn btn-outline-success" (click)="exportCsv()" [disabled]="!report">
+          <i class="bi bi-file-earmark-spreadsheet"></i> Export CSV
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <section class="tax-filter-strip no-print">
+    <div class="row g-3 align-items-end">
+      <div class="col-md-3">
+        <label class="form-label">Start Date</label>
+        <input type="date" class="form-control" [(ngModel)]="startDate">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">End Date</label>
+        <input type="date" class="form-control" [(ngModel)]="endDate">
+      </div>
+      <div class="col-md-3">
+        <button class="btn btn-primary w-100" (click)="loadReport()" [disabled]="loading">
+          <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+          <i class="bi bi-arrow-repeat" *ngIf="!loading"></i> Generate Report
+        </button>
+      </div>
+      <div class="col-md-3">
+        <button class="btn btn-light w-100" (click)="resetFilters()" [disabled]="loading">Reset</button>
+      </div>
+      <div class="col-12 tax-quick-filters">
+        <button type="button" (click)="applyQuickFilter('today')">Today</button>
+        <button type="button" (click)="applyQuickFilter('week')">This Week</button>
+        <button type="button" (click)="applyQuickFilter('month')">This Month</button>
+        <button type="button" (click)="applyQuickFilter('year')">This Year</button>
+      </div>
+    </div>
+  </section>
+
+  <div *ngIf="loading" class="tax-state-card">
+    <div class="spinner-border text-success"></div>
+    <span>Calculating tax report from database...</span>
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+  <ng-container *ngIf="report && !loading">
+    <div id="taxReportPrintableArea" class="tax-report-print-area">
+      <div class="print-only tax-print-cover">
+        <h1>Tax Compliance Report</h1>
+        <p>Date range: {{ startDate }} to {{ endDate }}</p>
+        <p>Generated: {{ generatedAt | date:'medium' }}</p>
+      </div>
+
+      <section class="tax-flow-panel">
+        <div class="flow-node output">
+          <span>Output VAT</span>
+          <strong>{{ formatCurrency(salesTaxOutput()) }}</strong>
+          <small>Collected from sales</small>
+        </div>
+        <div class="flow-operator"><i class="bi bi-dash-lg"></i></div>
+        <div class="flow-node input">
+          <span>Less Input VAT</span>
+          <strong>{{ formatCurrency(purchaseTaxInput()) }}</strong>
+          <small>Paid on purchases</small>
+        </div>
+        <div class="flow-operator"><i class="bi bi-arrow-right"></i></div>
+        <div class="flow-node net" [class.refund]="netTaxPayable() < 0" [class.clear]="netTaxPayable() === 0">
+          <span>Net VAT Payable / Refundable</span>
+          <strong>{{ formatCurrency(netTaxPayable()) }}</strong>
+          <small>{{ taxStatus() }}</small>
+        </div>
+      </section>
+
+      <section class="tax-kpi-ledger">
+        <article class="tax-kpi-card sales"><i class="bi bi-cash-stack"></i><span>Total Sales Amount</span><strong>{{ formatCurrency(totalSalesAmount()) }}</strong><small>Completed sales</small></article>
+        <article class="tax-kpi-card output"><i class="bi bi-receipt"></i><span>Output VAT</span><strong>{{ formatCurrency(salesTaxOutput()) }}</strong><small>VAT collected</small></article>
+        <article class="tax-kpi-card purchases"><i class="bi bi-cart-check"></i><span>Total Purchase Amount</span><strong>{{ formatCurrency(totalPurchaseAmount()) }}</strong><small>Received purchases</small></article>
+        <article class="tax-kpi-card input"><i class="bi bi-box-arrow-in-down"></i><span>Input VAT</span><strong>{{ formatCurrency(purchaseTaxInput()) }}</strong><small>VAT paid</small></article>
+        <article class="tax-kpi-card net"><i class="bi bi-bank"></i><span>Net VAT Payable</span><strong>{{ formatCurrency(netTaxPayable()) }}</strong><small>{{ reportStatusBadge() }}</small></article>
+        <article class="tax-kpi-card refund"><i class="bi bi-arrow-counterclockwise"></i><span>Refundable Amount</span><strong>{{ formatCurrency(refundableAmount()) }}</strong><small>Carry forward</small></article>
+        <article class="tax-kpi-card count"><i class="bi bi-file-text"></i><span>Sales Invoices</span><strong>{{ salesInvoiceCount() }}</strong><small>Output documents</small></article>
+        <article class="tax-kpi-card count"><i class="bi bi-truck"></i><span>Purchase Invoices</span><strong>{{ purchaseInvoiceCount() }}</strong><small>Input documents</small></article>
+      </section>
+
+      <section class="tax-analytics-layout">
+        <div class="tax-panel comparison-panel">
+          <h5>Output VAT vs Input VAT</h5>
+          <div class="tax-chart-box large"><canvas id="taxComparisonChart"></canvas></div>
+        </div>
+        <aside class="tax-side-stack">
+          <div class="tax-mini-card" [class.refund]="netTaxPayable() < 0">
+            <span>Net VAT Status</span>
+            <strong>{{ reportStatusBadge() }}</strong>
+            <small>{{ taxStatus() }}</small>
+          </div>
+          <div class="tax-mini-card rate">
+            <span>Average Tax Rate</span>
+            <strong>{{ formatPercent(averageTaxRate()) }}</strong>
+            <small>Weighted across taxable value</small>
+          </div>
+          <div class="tax-mini-card docs">
+            <span>Taxable Transaction Count</span>
+            <strong>{{ taxableTransactionCount() }}</strong>
+            <small>Sales and purchase invoices</small>
+          </div>
+        </aside>
+      </section>
+
+      <section class="tax-secondary-charts">
+        <div class="tax-panel">
+          <h5>Net Payable Trend</h5>
+          <div class="tax-chart-box"><canvas id="taxTrendChart"></canvas></div>
+          <div class="empty-note" *ngIf="!(report.taxTrend || []).length">No tax trend found.</div>
+        </div>
+        <div class="tax-panel">
+          <h5>Tax Contribution Distribution</h5>
+          <div class="tax-chart-box"><canvas id="taxContributionChart"></canvas></div>
+        </div>
+      </section>
+
+      <section class="tax-compliance-summary">
+        <div>
+          <h5>VAT Filing Summary</h5>
+          <p>{{ taxStatus() }} for the selected period based on completed sales and received purchases.</p>
+        </div>
+        <div class="summary-facts">
+          <span><strong>Generated</strong>{{ generatedAt | date:'medium' }}</span>
+          <span><strong>Date Range</strong>{{ startDate }} to {{ endDate }}</span>
+          <span><strong>Status</strong>{{ reportStatusBadge() }}</span>
+        </div>
+      </section>
+
+      <section class="tax-tabs-card">
+        <div class="tax-tab-list no-print" role="tablist">
+          <button type="button" [class.active]="activeTab === 'sales'" (click)="setActiveTab('sales')">Sales VAT / Output Tax</button>
+          <button type="button" [class.active]="activeTab === 'purchase'" (click)="setActiveTab('purchase')">Purchase VAT / Input Tax</button>
+          <button type="button" [class.active]="activeTab === 'rates'" (click)="setActiveTab('rates')">Tax Rate Summary</button>
+          <button type="button" [class.active]="activeTab === 'final'" (click)="setActiveTab('final')">Final Calculation</button>
+        </div>
+
+        <div class="tax-tab-panel" [class.active]="activeTab === 'sales'">
+          <h5>Sales VAT / Output Tax</h5>
+          <div class="tax-table-scroll">
+            <table>
+              <thead><tr><th>Invoice No</th><th>Sale Date</th><th>Customer Name</th><th>Taxable Amount</th><th>Tax Rate</th><th>Output VAT</th><th>Total Amount</th></tr></thead>
+              <tbody>
+                <tr *ngFor="let row of report.salesTaxBreakdown"><td>{{ row.invoiceNo }}</td><td>{{ row.saleDate }}</td><td>{{ row.customerName }}</td><td>{{ formatCurrency(row.taxableAmount) }}</td><td>{{ formatPercent(row.taxRate) }}</td><td>{{ formatCurrency(row.outputVat) }}</td><td>{{ formatCurrency(row.totalAmount) }}</td></tr>
+                <tr *ngIf="!(report.salesTaxBreakdown || []).length"><td colspan="7">No sales tax data found.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="tax-tab-panel" [class.active]="activeTab === 'purchase'">
+          <h5>Purchase VAT / Input Tax</h5>
+          <div class="tax-table-scroll">
+            <table>
+              <thead><tr><th>Purchase Order No</th><th>Purchase Date</th><th>Supplier Name</th><th>Taxable Amount</th><th>Tax Rate</th><th>Input VAT</th><th>Total Amount</th></tr></thead>
+              <tbody>
+                <tr *ngFor="let row of report.purchaseTaxBreakdown"><td>{{ row.purchaseOrderNo }}</td><td>{{ row.purchaseDate }}</td><td>{{ row.supplierName }}</td><td>{{ formatCurrency(row.taxableAmount) }}</td><td>{{ formatPercent(row.taxRate) }}</td><td>{{ formatCurrency(row.inputVat) }}</td><td>{{ formatCurrency(row.totalAmount) }}</td></tr>
+                <tr *ngIf="!(report.purchaseTaxBreakdown || []).length"><td colspan="7">No purchase tax data found.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="tax-tab-panel" [class.active]="activeTab === 'rates'">
+          <h5>Tax Rate Summary</h5>
+          <div class="tax-table-scroll">
+            <table>
+              <thead><tr><th>Tax Rate</th><th>Sales Taxable Amount</th><th>Output VAT</th><th>Purchase Taxable Amount</th><th>Input VAT</th><th>Net VAT</th></tr></thead>
+              <tbody>
+                <tr *ngFor="let row of report.taxSummaryByRate"><td>{{ formatPercent(row.taxRate) }}</td><td>{{ formatCurrency(row.salesTaxableAmount) }}</td><td>{{ formatCurrency(row.outputVat) }}</td><td>{{ formatCurrency(row.purchaseTaxableAmount) }}</td><td>{{ formatCurrency(row.inputVat) }}</td><td>{{ formatCurrency(row.netVat) }}</td></tr>
+                <tr *ngIf="!(report.taxSummaryByRate || []).length"><td colspan="6">No tax rate summary found.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="tax-tab-panel" [class.active]="activeTab === 'final'">
+          <h5>Final Calculation</h5>
+          <table>
+            <thead><tr><th>Description</th><th>Amount</th></tr></thead>
+            <tbody>
+              <tr><td>Total Output VAT</td><td>{{ formatCurrency(salesTaxOutput()) }}</td></tr>
+              <tr><td>Less: Total Input VAT</td><td>{{ formatCurrency(purchaseTaxInput()) }}</td></tr>
+              <tr class="tax-grand-row"><td>Net VAT Payable / Refundable</td><td>{{ formatCurrency(netTaxPayable()) }}</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="tax-insight-box">
+        <h5>Compliance Notes</h5>
+        <div *ngFor="let message of report.insights" class="tax-insight" [ngClass]="insightClass(message)">
+          <i class="bi bi-info-circle"></i>{{ message }}
+        </div>
+        <div *ngIf="!(report.insights || []).length" class="tax-insight info">No insight available for this period.</div>
+      </section>
+
+      <div class="print-only tax-print-footer">TradeMaster Inventory & Stock Management System</div>
+    </div>
+  </ng-container>
+</div>

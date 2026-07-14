@@ -1,0 +1,70 @@
+<div class="container mt-4">
+  <h2>Stock Movements</h2>
+
+  <div class="card mb-3">
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <input type="text" class="form-control" placeholder="Search by product, reference..." 
+                 [(ngModel)]="searchTerm">
+        </div>
+        <div class="col-md-3">
+          <select class="form-select" [(ngModel)]="selectedType">
+            <option value="">All Types</option>
+            <option *ngFor="let t of movementTypes" [value]="t">{{ t }}</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary"></div>
+  </div>
+
+  <div *ngIf="!loading" class="table-responsive">
+    <table class="table table-bordered table-hover">
+      <thead class="theme-table-header">
+        <tr>
+          <th>Date</th>
+          <th>Product</th>
+          <th>Warehouse</th>
+          <th>Type</th>
+          <th>Quantity</th>
+          <th>Previous Stock</th>
+          <th>New Stock</th>
+          <th>Reference</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let m of filteredMovements">
+          <td>{{ formatDate(m.createdAt) }}</td>
+          <td>
+            <app-product-mini
+              [imageUrl]="getProductImageUrl(m.productId)"
+              [productName]="getProductName(m.productId)"
+              [sku]="getProductSku(m.productId)">
+            </app-product-mini>
+          </td>
+          <td>{{ getWarehouseName(m.warehouseId) }}</td>
+          <td>
+            <span class="badge" [class.bg-primary]="m.movementType === 'PURCHASE'"
+                  [class.bg-success]="m.movementType === 'SALE'"
+                  [class.bg-warning]="m.movementType === 'RETURN'"
+                  [class.bg-info]="m.movementType === 'ADJUSTMENT'"
+                  [class.bg-secondary]="m.movementType === 'TRANSFER'">
+              {{ m.movementType }}
+            </span>
+        </td>
+          <td>{{ m.quantity > 0 ? '+' + m.quantity : m.quantity }}</td>
+          <td>{{ m.previousStock }}</td>
+          <td>{{ m.newStock }}</td>
+          <td>{{ m.referenceNo || '-' }}</td>
+         </tr>
+        <tr *ngIf="filteredMovements.length === 0">
+          <td colspan="8" class="text-center py-4">No stock movements found.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>  

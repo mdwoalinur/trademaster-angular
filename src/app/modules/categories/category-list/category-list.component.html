@@ -1,0 +1,42 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Categories</h2>
+    <button class="btn btn-primary" (click)="addCategory()">+ Add Category</button>
+  </div>
+
+  <div class="row mb-3">
+    <div class="col-md-4">
+      <input type="text" class="form-control" placeholder="Search by name..." [(ngModel)]="searchTerm">
+    </div>
+    <div class="col-md-3">
+      <select class="form-select" [(ngModel)]="filterStatus">
+        <option *ngFor="let opt of statusOptions" [value]="opt">{{ opt }}</option>
+      </select>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="text-center">Loading...</div>
+  <div *ngIf="!loading && filteredCategories.length === 0" class="alert alert-info">No categories found.</div>
+
+  <div class="row" *ngIf="!loading">
+    <div class="col-md-6 col-lg-4 mb-3" *ngFor="let category of filteredCategories">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">{{ category.categoryName }}</h5>
+          <p class="card-text">
+            <strong>Parent:</strong> {{ getParentName(category.parentCategoryId) }}<br>
+            <strong>Description:</strong> {{ category.description || '-' }}<br>
+            <strong>Created:</strong> {{ category.createdAt | date:'mediumDate' }}<br>
+            <span class="badge" [class]="getStatusClass(category.status)">
+              {{ getStatusText(category.status) }}
+            </span>
+          </p>
+          <div class="mt-2">
+            <button class="btn btn-sm btn-warning me-2" (click)="editCategory(category)">Edit</button>
+            <button class="btn btn-sm btn-danger" (click)="deleteCategory(category)">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

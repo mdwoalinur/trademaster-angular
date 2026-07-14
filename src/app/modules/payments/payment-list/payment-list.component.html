@@ -1,0 +1,103 @@
+
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>{{ 'PAYMENT.TITLE' | translate }}</h2>
+    <button class="btn btn-primary" (click)="addPayment()">
+      <i class="bi bi-plus-circle"></i> {{ 'PAYMENT.ADD_PAYMENT' | translate }}
+    </button>
+  </div>
+
+  <!-- Filters -->
+  <div class="card mb-3">
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-3">
+          <input type="text" class="form-control" [placeholder]="'PAYMENT.SEARCH_PLACEHOLDER' | translate"
+                 [(ngModel)]="searchKeyword" (input)="onSearch()">
+        </div>
+        <div class="col-md-2">
+          <select class="form-select" [(ngModel)]="selectedType" (change)="onFilterChange()">
+            <option value="">{{ 'PAYMENT.ALL_TYPES' | translate }}</option>
+            <option *ngFor="let t of typeOptions" [value]="t">{{ t | statusLabel }}</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <select class="form-select" [(ngModel)]="selectedStatus" (change)="onFilterChange()">
+            <option value="">{{ 'PAYMENT.ALL_STATUS' | translate }}</option>
+            <option *ngFor="let s of statusOptions" [value]="s">{{ s | statusLabel }}</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <button class="btn btn-outline-secondary w-100" (click)="resetFilters()">
+            <i class="bi bi-eraser"></i> {{ 'COMMON.RESET' | translate }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary"></div>
+  </div>
+
+  <!-- Table -->
+  <div *ngIf="!loading" class="table-responsive">
+    <table class="table table-hover table-bordered">
+      <thead class="theme-table-header">
+        <tr>
+          <th>#</th>
+          <th>{{ 'COMMON.VOUCHER' | translate }}</th>
+          <th>{{ 'COMMON.TYPE' | translate }}</th>
+          <th>{{ 'COMMON.DIRECTION' | translate }}</th>
+          <th>{{ 'COMMON.REFERENCE' | translate }}</th>
+          <th>{{ 'COMMON.DATE' | translate }}</th>
+          <th>{{ 'COMMON.REQUESTED' | translate }}</th>
+          <th>{{ 'COMMON.APPROVED' | translate }}</th>
+          <th>{{ 'COMMON.METHOD' | translate }}</th>
+          <th>{{ 'COMMON.APPROVED' | translate }}</th>
+          <th>{{ 'COMMON.TRANSACTION' | translate }}</th>
+          <th>{{ 'COMMON.ACTIONS' | translate }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let p of payments; let i = index">
+          <td>{{ i + 1 + (currentPage - 1) * pageSize }}</td>
+          <td>{{ p.voucherNo || '-' }}</td>
+          <td><span class="badge" [class]="getTypeBadge(p.paymentType)">{{ p.paymentType | statusLabel }}</span></td>
+          <td>{{ p.direction ? (p.direction | statusLabel) : '-' }}</td>
+          <td>{{ p.referenceNo || p.referenceId }}</td>
+          <td>{{ formatDate(p.paymentDate) }}</td>
+          <td>{{ formatCurrency(p.requestedAmount || p.amount) }}</td>
+          <td>{{ p.approvedAmount ? formatCurrency(p.approvedAmount) : '-' }}</td>
+          <td>{{ p.paymentMethod | statusLabel }}</td>
+          <td><span class="badge" [class]="getStatusBadge(p.approvalStatus || p.paymentStatus)">{{ (p.approvalStatus || p.paymentStatus) | statusLabel }}</span></td>
+          <td><span class="badge" [class]="getStatusBadge(p.transactionStatus || '')">{{ p.transactionStatus | statusLabel }}</span></td>
+          <td>
+            <button class="btn btn-sm btn-outline-primary me-1" (click)="viewPayment(p.paymentId!)" [title]="'COMMON.VIEW' | translate"><i class="bi bi-eye"></i></button>
+            <button *ngIf="p.approvalStatus === 'DRAFT'" class="btn btn-sm btn-outline-primary me-1" (click)="submitPayment(p)" [title]="'COMMON.SUBMIT' | translate"><i class="bi bi-send"></i></button>
+            <button *ngIf="p.approvalStatus === 'DRAFT'" class="btn btn-sm btn-warning me-1" (click)="editPayment(p.paymentId!)" [title]="'PAYMENT.EDIT_DRAFT' | translate"><i class="bi bi-pencil"></i></button>
+            <button *ngIf="p.approvalStatus === 'PENDING_APPROVAL'" class="btn btn-sm btn-success me-1" (click)="approvePayment(p)" [title]="'PAYMENT.APPROVE_POST' | translate"><i class="bi bi-check2-circle"></i></button>
+            <button *ngIf="p.approvalStatus === 'PENDING_APPROVAL'" class="btn btn-sm btn-outline-danger me-1" (click)="rejectPayment(p)" [title]="'COMMON.REJECT' | translate"><i class="bi bi-x-circle"></i></button>
+            <button *ngIf="canDeletePayment(p)" class="btn btn-sm btn-danger" (click)="deletePayment(p.paymentId!)" [title]="'PAYMENT.DELETE_UNTOUCHED_DRAFT' | translate"><i class="bi bi-trash"></i></button>
+          </td>
+        </tr>
+        <tr *ngIf="payments.length === 0">
+          <td colspan="12" class="text-center py-4">{{ 'PAYMENT.NO_PAYMENTS_FOUND' | translate }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div *ngIf="totalPages > 1" class="d-flex justify-content-between align-items-center mt-3">
+    <div>{{ 'COMMON.SHOWING_RANGE' | translate:{ from: (currentPage - 1) * pageSize + 1, to: Math.min(currentPage * pageSize, totalElements), total: totalElements } }}</div>
+    <div>
+      <button class="btn btn-outline-secondary btn-sm me-2" (click)="firstPage()" [disabled]="currentPage === 1"><i class="bi bi-chevron-double-left"></i></button>
+      <button class="btn btn-outline-secondary btn-sm me-2" (click)="previousPage()" [disabled]="currentPage === 1"><i class="bi bi-chevron-left"></i></button>
+      <span>{{ 'COMMON.PAGE_OF' | translate:{ page: currentPage, total: totalPages } }}</span>
+      <button class="btn btn-outline-secondary btn-sm ms-2" (click)="nextPage()" [disabled]="currentPage === totalPages"><i class="bi bi-chevron-right"></i></button>
+      <button class="btn btn-outline-secondary btn-sm ms-2" (click)="lastPage()" [disabled]="currentPage === totalPages"><i class="bi bi-chevron-double-right"></i></button>
+    </div>
+  </div>
+</div>

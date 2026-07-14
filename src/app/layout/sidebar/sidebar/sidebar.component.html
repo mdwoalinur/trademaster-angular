@@ -1,0 +1,84 @@
+<div class="sidebar">
+  <!-- Brand / Logo -->
+  <div class="sidebar-brand">
+    <img src="assets/images/logo.png" alt="TradeMaster Logo" class="sidebar-logo">
+  </div>
+
+  <!-- Search Bar -->
+  <div class="sidebar-search">
+    <div class="search-wrapper">
+      <i class="bi bi-search search-icon"></i>
+      <input type="text" 
+             id="sidebar-search"
+             class="search-input" 
+             [placeholder]="'COMMON.SEARCH_MENU' | translate" 
+             [(ngModel)]="searchTerm" 
+             (input)="filterMenu()"
+             autocomplete="off">
+      <button *ngIf="searchTerm" class="clear-btn" (click)="clearSearch()">
+        <i class="bi bi-x-circle-fill"></i>
+      </button>
+      <div class="search-shortcut" *ngIf="!searchTerm">
+        <kbd>⌘</kbd><kbd>K</kbd>
+      </div>
+    </div>
+  </div>
+
+  <!-- Menu Sections (Dynamic) -->
+  <div class="sidebar-menu">
+    <ng-container *ngFor="let section of menuSections">
+      <div class="menu-section" *ngIf="sectionHasVisibleItems(section)">
+        <div class="menu-title">{{ section.titleKey ? (section.titleKey | translate) : section.title }}</div>
+        
+        <ng-container *ngFor="let item of section.items">
+          <!-- Parent with children (dropdown) -->
+          <div *ngIf="item.children; else leafItem" [class.visible]="item.visible">
+            <div class="menu-item dropdown-toggle" 
+                 (click)="toggleDropdown(item, $event)"
+                 [class.active]="item.expanded || isRouteActive(item)">
+              <i *ngIf="item.icon" [class]="item.icon"></i>
+              <span [innerHTML]="highlightMatch(getMenuLabel(item))"></span>
+              <i class="bi chevron-icon" 
+                 [class.bi-chevron-down]="!item.expanded" 
+                 [class.bi-chevron-up]="item.expanded"></i>
+            </div>
+            <!-- Sub-menu -->
+            <div class="sub-menu" *ngIf="item.expanded">
+              <ng-container *ngFor="let child of item.children">
+                <a *ngIf="child.visible" 
+                   class="sub-menu-item" 
+                   [routerLink]="child.route"
+                   [class.active]="isRouteActive(child)"
+                   [class.matched]="child.matched"
+                   [attr.data-selected]="isSelected(child)"
+                   (click)="navigateTo(child.route)">
+                  <i *ngIf="child.icon" [class]="child.icon"></i>
+                  <span [innerHTML]="highlightMatch(getMenuLabel(child))"></span>
+                </a>
+              </ng-container>
+            </div>
+          </div>
+          
+          
+          <!-- Leaf item (no children) -->
+          <ng-template #leafItem>
+            <a *ngIf="item.visible" 
+               class="menu-item" 
+               [routerLink]="item.route"
+               [class.active]="isRouteActive(item)"
+               [class.matched]="item.matched"
+               [attr.data-selected]="isSelected(item)"
+               (click)="navigateTo(item.route)">
+              <i *ngIf="item.icon" [class]="item.icon"></i>
+              <span [innerHTML]="highlightMatch(getMenuLabel(item))"></span>
+            </a>
+          </ng-template>
+        </ng-container>
+      </div>
+    </ng-container>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="sidebar-developed-by">Developed by Md. Woalinur</div>
+  </div>
+</div>

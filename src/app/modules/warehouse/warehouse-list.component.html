@@ -1,0 +1,46 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Warehouses</h2>
+    <button class="btn btn-primary" (click)="addWarehouse()">+ Add Warehouse</button>
+  </div>
+
+  <div class="row mb-3">
+    <div class="col-md-4">
+      <input type="text" class="form-control" placeholder="Search by name, code, location, manager..." [(ngModel)]="searchTerm">
+    </div>
+    <div class="col-md-3">
+      <select class="form-select" [(ngModel)]="filterStatus">
+        <option *ngFor="let opt of statusOptions" [value]="opt">{{ opt }}</option>
+      </select>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="text-center">Loading...</div>
+  <div *ngIf="!loading && filteredWarehouses.length === 0" class="alert alert-info">No warehouses found.</div>
+
+  <div class="row" *ngIf="!loading">
+    <div class="col-md-6 col-lg-4 mb-3" *ngFor="let warehouse of filteredWarehouses">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <span class="badge bg-secondary">{{ warehouse.warehouseCode }}</span>
+          <h5 class="card-title mt-2">{{ warehouse.name }}</h5>
+          <p class="card-text">
+            <strong>Location:</strong> {{ warehouse.location || '-' }}<br>
+            <strong>Manager:</strong> {{ warehouse.managerName || '-' }}<br>
+            <strong>Phone:</strong> {{ warehouse.contactPhone || '-' }}<br>
+            <strong>Email:</strong> {{ warehouse.contactEmail || '-' }}<br>
+            <strong>Capacity:</strong> {{ warehouse.capacity || 0 }}<br>
+            <strong>Created:</strong> {{ warehouse.createdAt | date:'mediumDate' }}<br>
+            <span class="badge" [class.bg-success]="warehouse.status === 'ACTIVE'" [class.bg-secondary]="warehouse.status !== 'ACTIVE'">
+              {{ warehouse.status }}
+            </span>
+          </p>
+          <div class="mt-2">
+            <button class="btn btn-sm btn-warning me-2" (click)="editWarehouse(warehouse)">Edit</button>
+            <button class="btn btn-sm btn-danger" (click)="deleteWarehouse(warehouse)">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,71 @@
+<div class="search-page">
+  <div class="search-head">
+    <div>
+      <h1>{{ 'SEARCH.TITLE' | translate }}</h1>
+      <p *ngIf="query && !helperMessage">{{ 'SEARCH.SHOWING_RESULTS' | translate:{ count: totalResults, query: query } }}</p>
+      <p *ngIf="!query">{{ 'SEARCH.DESCRIPTION' | translate }}</p>
+      <p *ngIf="helperMessage">{{ helperMessage }}</p>
+    </div>
+    <form class="search-box" (ngSubmit)="onSearch()">
+      <i class="bi bi-search"></i>
+      <input name="query" [(ngModel)]="query" type="text" [placeholder]="'SEARCH.PLACEHOLDER' | translate">
+      <button type="submit">{{ 'SEARCH.BUTTON' | translate }}</button>
+    </form>
+  </div>
+
+  <div class="state" *ngIf="loading">
+    <div class="spinner-border text-primary"></div>
+    <span>{{ 'COMMON.SEARCHING' | translate }}</span>
+  </div>
+
+  <div class="state error" *ngIf="!loading && errorMessage">
+    <i class="bi bi-exclamation-circle"></i>
+    <span>{{ errorMessage }}</span>
+  </div>
+
+  <div class="state" *ngIf="!loading && !errorMessage && query && query.length >= 2 && totalResults === 0">
+    <i class="bi bi-search"></i>
+    <span>{{ 'COMMON.NO_RESULTS_FOUND' | translate }}</span>
+  </div>
+
+  <div class="result-groups" *ngIf="!loading && groups.length">
+    <section class="result-section" *ngFor="let group of groups">
+      <div class="section-title">
+        <span><i [class]="group.icon"></i> {{ group.label }}</span>
+        <small>{{ group.items.length }}</small>
+      </div>
+      <button class="result-row" *ngFor="let result of group.items" (click)="openResult(result)">
+        <app-customer-mini
+          *ngIf="result.type === 'CUSTOMER'; else genericResultIcon"
+          [photoUrl]="result.photoUrl"
+          [customerName]="result.title"
+          [customerCode]="result.customerCode"
+          [email]="result.email"
+          [phone]="result.phone"
+          [compact]="true">
+        </app-customer-mini>
+        <ng-template #genericResultIcon>
+          <app-supplier-mini
+            *ngIf="result.type === 'SUPPLIER'; else defaultResultIcon"
+            [photoUrl]="result.photoUrl"
+            [supplierName]="result.title"
+            [supplierCode]="result.supplierCode"
+            [email]="result.email"
+            [phone]="result.phone"
+            [contactPerson]="result.contactPerson"
+            [compact]="true">
+          </app-supplier-mini>
+        </ng-template>
+        <ng-template #defaultResultIcon>
+          <span class="result-icon"><i class="bi" [ngClass]="result.icon"></i></span>
+        </ng-template>
+        <span class="result-copy" *ngIf="result.type !== 'CUSTOMER' && result.type !== 'SUPPLIER'">
+          <strong>{{ result.title }}</strong>
+          <small>{{ result.subtitle || result.type }}</small>
+        </span>
+        <span class="result-status" *ngIf="result.status">{{ result.status | statusLabel }}</span>
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </section>
+  </div>
+</div>

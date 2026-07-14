@@ -1,0 +1,174 @@
+<div class="payment-details-page">
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-success"></div>
+  </div>
+
+  <ng-container *ngIf="!loading && payment">
+    <div class="details-header">
+      <div>
+        <button type="button" class="btn btn-sm btn-outline-secondary mb-2" (click)="goBack()">
+          <i class="bi bi-arrow-left"></i> Back
+        </button>
+        <h2>{{ payment.voucherNo || 'Payment Details' }}</h2>
+        <p>{{ payment.paymentType }} / {{ payment.direction || '-' }} / {{ payment.referenceNo || payment.referenceId }}</p>
+      </div>
+      <div class="status-stack">
+        <span class="badge" [class]="getBadge(payment.approvalStatus)">{{ payment.approvalStatus || '-' }}</span>
+        <span class="badge" [class]="getBadge(payment.transactionStatus)">{{ payment.transactionStatus || '-' }}</span>
+        <span class="badge" [class]="getBadge(payment.reconciliationStatus)">{{ payment.reconciliationStatus || '-' }}</span>
+      </div>
+    </div>
+
+    <div class="approval-warning" *ngIf="payment.transactionStatus !== 'POSTED'">
+      <i class="bi bi-shield-lock"></i>
+      No ledger, cash/bank balance, paid amount, or due amount is impacted until Admin approval posts this payment.
+    </div>
+
+    <div class="kpi-grid">
+      <article>
+        <span>Requested</span>
+        <strong>{{ formatCurrency(payment.requestedAmount || payment.amount) }}</strong>
+      </article>
+      <article>
+        <span>Approved / Posted</span>
+        <strong>{{ payment.approvedAmount ? formatCurrency(payment.approvedAmount) : '-' }}</strong>
+      </article>
+      <article>
+        <span>Payment Method</span>
+        <strong>{{ payment.paymentMethod }}</strong>
+      </article>
+      <article>
+        <span>Posting Account</span>
+        <strong>{{ payment.accountId || '-' }}</strong>
+      </article>
+    </div>
+
+    <div class="details-card">
+      <div class="tab-row">
+        <button type="button" [class.active]="activeTab === 'overview'" (click)="activeTab = 'overview'">Overview</button>
+        <button type="button" [class.active]="activeTab === 'method'" (click)="activeTab = 'method'">Method Details</button>
+        <button type="button" [class.active]="activeTab === 'allocations'" (click)="activeTab = 'allocations'">Allocations</button>
+        <button type="button" [class.active]="activeTab === 'attachments'" (click)="activeTab = 'attachments'">Attachments</button>
+        <button type="button" [class.active]="activeTab === 'history'" (click)="activeTab = 'history'">Approval History</button>
+        <button type="button" [class.active]="activeTab === 'actions'" (click)="activeTab = 'actions'">Refunds & Reversals</button>
+      </div>
+
+      <div *ngIf="activeTab === 'overview'" class="details-grid">
+        <div><span>Payment ID</span><strong>{{ payment.paymentId }}</strong></div>
+        <div><span>Payment Type</span><strong>{{ payment.paymentType }}</strong></div>
+        <div><span>Direction</span><strong>{{ payment.direction || '-' }}</strong></div>
+        <div><span>Party Type</span><strong>{{ payment.partyType || '-' }}</strong></div>
+        <div><span>Party ID</span><strong>{{ payment.partyId || '-' }}</strong></div>
+        <div><span>Reference</span><strong>{{ payment.referenceNo || payment.referenceId }}</strong></div>
+        <div><span>Payment Date</span><strong>{{ formatDate(payment.paymentDate) }}</strong></div>
+        <div><span>Destination Account</span><strong>{{ payment.destinationAccountId || '-' }}</strong></div>
+        <div><span>Transaction Ref</span><strong>{{ payment.transactionReference || '-' }}</strong></div>
+        <div><span>Original Payment</span><strong>{{ payment.originalPaymentId || '-' }}</strong></div>
+        <div><span>Reversal Payment</span><strong>{{ payment.reversalPaymentId || '-' }}</strong></div>
+        <div><span>Posted At</span><strong>{{ formatDate(payment.postedAt) }}</strong></div>
+        <div class="full"><span>Notes</span><strong>{{ payment.notes || '-' }}</strong></div>
+        <div class="full"><span>Refund / Void Reason</span><strong>{{ payment.refundReason || '-' }}</strong></div>
+      </div>
+
+      <div *ngIf="activeTab === 'method'" class="details-grid">
+        <div><span>Cash Drawer</span><strong>{{ payment.cashDrawer || '-' }}</strong></div>
+        <div><span>Received Amount</span><strong>{{ payment.receivedAmount ? formatCurrency(payment.receivedAmount) : '-' }}</strong></div>
+        <div><span>Change Amount</span><strong>{{ payment.changeAmount ? formatCurrency(payment.changeAmount) : '-' }}</strong></div>
+        <div><span>Bank Name</span><strong>{{ payment.bankName || '-' }}</strong></div>
+        <div><span>Cheque No</span><strong>{{ payment.chequeNumber || '-' }}</strong></div>
+        <div><span>Cheque Status</span><strong>{{ payment.chequeStatus || '-' }}</strong></div>
+        <div><span>Cheque Date</span><strong>{{ formatDate(payment.chequeDate) }}</strong></div>
+        <div><span>Expected Clearing</span><strong>{{ formatDate(payment.expectedClearingDate) }}</strong></div>
+        <div><span>Mobile Provider</span><strong>{{ payment.mobileProvider || '-' }}</strong></div>
+        <div><span>Mobile Transaction</span><strong>{{ payment.mobileTransactionId || '-' }}</strong></div>
+        <div><span>Card Type</span><strong>{{ payment.cardType || '-' }}</strong></div>
+        <div><span>Card Last 4</span><strong>{{ payment.cardLastFour || '-' }}</strong></div>
+        <div><span>Gateway Reference</span><strong>{{ payment.gatewayReference || '-' }}</strong></div>
+        <div><span>Approval Code</span><strong>{{ payment.approvalCode || '-' }}</strong></div>
+        <div><span>Terminal Reference</span><strong>{{ payment.terminalReference || '-' }}</strong></div>
+        <div class="full"><span>Sender / Receiver Reference</span><strong>{{ payment.senderReceiverReference || '-' }}</strong></div>
+      </div>
+
+      <div *ngIf="activeTab === 'allocations'" class="table-responsive p-3">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="theme-table-header">
+            <tr>
+              <th>Reference Type</th>
+              <th>Reference ID</th>
+              <th class="text-end">Allocated Amount</th>
+              <th class="text-end">Discount</th>
+              <th class="text-end">Write Off</th>
+              <th>Created At</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of allocations">
+              <td>{{ item.referenceType || '-' }}</td>
+              <td>{{ item.referenceId || '-' }}</td>
+              <td class="text-end">{{ formatCurrency(item.allocatedAmount) }}</td>
+              <td class="text-end">{{ formatCurrency(item.discountAmount) }}</td>
+              <td class="text-end">{{ formatCurrency(item.writeOffAmount) }}</td>
+              <td>{{ formatDate(item.createdAt) }}</td>
+            </tr>
+            <tr *ngIf="allocations.length === 0">
+              <td colspan="6" class="text-center text-muted py-3">No allocations found.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div *ngIf="activeTab === 'attachments'" class="attachment-panel">
+        <div class="attachment-toolbar">
+          <div>
+            <h5>Supporting Documents</h5>
+            <p>Invoices, bank slips, cheque images, receipts, or approval evidence.</p>
+          </div>
+          <label class="btn btn-outline-success btn-sm" [class.disabled]="!canEditAttachments() || uploading">
+            <i class="bi bi-paperclip"></i> {{ uploading ? 'Uploading...' : 'Upload' }}
+            <input type="file" hidden (change)="uploadAttachment($event)" [disabled]="!canEditAttachments() || uploading">
+          </label>
+        </div>
+        <div class="attachment-list">
+          <div *ngFor="let attachment of attachments" class="attachment-item">
+            <div>
+              <strong>{{ attachment.originalFileName }}</strong>
+              <small>{{ attachment.contentType || 'file' }} / {{ attachment.fileSize || 0 }} bytes</small>
+            </div>
+            <div class="d-flex gap-2">
+              <button type="button" class="btn btn-sm btn-outline-primary" (click)="downloadAttachment(attachment)">Open</button>
+              <button type="button" class="btn btn-sm btn-outline-danger" [disabled]="!canEditAttachments()" (click)="deleteAttachment(attachment)">Delete</button>
+            </div>
+          </div>
+          <div *ngIf="attachments.length === 0" class="empty-state">No attachments added.</div>
+        </div>
+      </div>
+
+      <div *ngIf="activeTab === 'history'" class="timeline">
+        <div *ngFor="let event of history" class="timeline-item">
+          <span class="timeline-dot"></span>
+          <div>
+            <strong>{{ event.action || event.newStatus || 'History' }}</strong>
+            <p>{{ event.comments || '-' }}</p>
+            <small>{{ event.previousStatus || '-' }} -> {{ event.newStatus || '-' }} / {{ formatDate(event.actedAt) }}</small>
+          </div>
+        </div>
+        <div *ngIf="history.length === 0" class="text-center text-muted py-3">No approval history found.</div>
+      </div>
+
+      <div *ngIf="activeTab === 'actions'" class="action-panel">
+        <article>
+          <h5>Correction / Cancellation</h5>
+          <p>Draft or pending requests can be returned or cancelled without financial posting.</p>
+          <button type="button" class="btn btn-outline-warning me-2" (click)="returnForCorrection()">Return for Correction</button>
+          <button type="button" class="btn btn-outline-danger" (click)="cancelPayment()">Cancel Request</button>
+        </article>
+        <article>
+          <h5>Refund / Reversal Requests</h5>
+          <p>Refunds and reversals create new approval-first payment requests. They do not affect ledger balances until posted.</p>
+          <button type="button" class="btn btn-outline-success me-2" [disabled]="!canRequestRefund()" (click)="createRefund()">Create Refund</button>
+          <button type="button" class="btn btn-outline-danger" [disabled]="!canRequestReversal()" (click)="createReversal()">Create Reversal</button>
+        </article>
+      </div>
+    </div>
+  </ng-container>
+</div>

@@ -1,0 +1,15 @@
+<div class="customer-mini" [class.customer-mini-compact]="compact">
+  <img
+    *ngIf="resolvedPhotoUrl; else initialsAvatar"
+    class="customer-avatar"
+    [src]="resolvedPhotoUrl"
+    [alt]="customerName || 'Customer photo'"
+    (error)="onImageError()">
+  <ng-template #initialsAvatar>
+    <div class="customer-avatar customer-avatar-fallback">{{ initials }}</div>
+  </ng-template>
+  <div class="customer-info">
+    <div class="customer-name">{{ customerName || 'Unknown Customer' }}</div>
+    <div class="customer-meta" *ngIf="metaText">{{ metaText }}</div>
+  </div>
+</div>

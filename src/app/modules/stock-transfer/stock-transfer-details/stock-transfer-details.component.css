@@ -1,0 +1,58 @@
+.container {
+  max-width: 1200px;
+}
+
+.card {
+  border: none;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.card-header {
+  padding: 1rem 1.5rem;
+}
+
+.info-group label {
+  font-size: 0.8rem;
+  margin-bottom: 2px;
+  display: block;
+}
+
+.info-group div {
+  font-size: 1rem;
+}
+
+.section-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-left: 4px solid #0d6efd;
+  padding-left: 10px;
+  margin-bottom: 1rem;
+}
+
+.table th {
+  background: var(--tm-table-header-bg);
+  color: var(--tm-table-header-text);
+  border-color: var(--tm-table-header-border);
+  font-weight: 600;
+}
+
+.badge {
+  font-size: 0.8rem;
+  padding: 5px 12px;
+  border-radius: 30px;
+}
+
+.btn {
+  border-radius: 30px;
+  padding: 6px 20px;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0 12px;
+  }
+  .info-group {
+    margin-bottom: 12px;
+  }
+}
