@@ -19,7 +19,7 @@ The application communicates with a secured Spring Boot REST API backend.
 
 ## Related Repository
 
-- Spring Boot Backend: https://github.com/mdwoalinur/trademaster-backend
+https://github.com/mdwoalinur/trademaster-spring-boot-backend
 
 ## Main Features
 
